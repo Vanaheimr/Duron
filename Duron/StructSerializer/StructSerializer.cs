@@ -413,7 +413,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #region Serialize(ValueT, ByteArray)
 
-        public Byte[] SerializeNew(T ValueT, Byte[] ByteArray, UInt32 Position = 0)
+        public Byte[] SerializeNew(T ValueT, Byte[] ByteArray)
         {
 
             if (ByteArray.Length < _StructSize)
