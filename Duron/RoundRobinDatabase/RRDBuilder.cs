@@ -528,7 +528,7 @@ namespace de.ahzf.Vanaheimr.Duron
             var _RRDatabaseAttribute = (from   CustomAttribute
                                         in     TypeAttributes
                                         where  CustomAttribute as RRDatabaseAttribute != null
-                                        select CustomAttribute as RRDatabaseAttribute).First();
+                                        select CustomAttribute as RRDatabaseAttribute).FirstOrDefault();
 
             this.Name                = _RRDatabaseAttribute.Name;
             this.Interval            = TimeSpan.FromMilliseconds(_RRDatabaseAttribute.Interval);

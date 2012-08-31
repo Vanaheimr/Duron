@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StructSerializer\FixedPositionAttribute.cs" />
     <Compile Include="StructSerializer\StructSerializer.cs" />
     <Compile Include="StructSerializer\FixedSizeAttribute.cs" />
     <Compile Include="MemoryMapped\MMFiles.cs" />

@@ -40,8 +40,8 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #region Data
 
-        private List<Func<T, Byte[]>> _Serializer;
-        private readonly UInt32 ItemSize;
+        private List<Action<T, Byte[]>> FieldSerializers;
+        private readonly Byte[] InternalCache;
 
         #endregion
 
@@ -92,38 +92,46 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #endregion
 
-
-
         #region Constructor(s)
 
+        #region StructSerializer(Padding = 8)
+
+        /// <summary>
+        /// Create a new struct serializer.
+        /// </summary>
+        /// <param name="Padding">The serialized struct will have a total size equals to a multiply of this value.</param>
         public StructSerializer(UInt32 Padding = 8)
         {
 
-            this.ItemSize   = 0;
-            this.Padding    = Padding;
-
-            _Schema     = new StringBuilder();
-            _Serializer = new List<Func<T, Byte[]>>();
+            this.Padding     = Padding;
+            this._Schema     = new StringBuilder();
+            this.FieldSerializers  = new List<Action<T, Byte[]>>();
 
             ReflectStruct(typeof(T));
 
+            InternalCache    = new Byte[StructSize];
+
         }
+
+        #endregion
 
         #endregion
 
 
 
 
-        public Func<TSource, Byte[]> GetGetFieldDelegate2<TSource, TValue>(Type fieldDeclaringType, String fieldName, Func<TValue, Byte[]> Func)
+        public Action<TSource, Byte[]> CreateFieldSerializer<TSource, TValue>(Type fieldDeclaringType, String fieldName, Func<TValue, Byte[]> SerializationFunc, UInt32 Position)
         {
 
-            if (fieldName == null) throw new ArgumentNullException("fieldName");
-            if (fieldDeclaringType == null) throw new ArgumentNullException("fieldDeclaringType");
+            return (_Struct, _Serialized) => {
+                                                var SerializedValue = SerializationFunc(
+                                                                          this.GetGetFieldDelegate<TSource, TValue>(
+                                                                              fieldDeclaringType.GetField(fieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
+                                                                          )
+                                                                          (_Struct));
+                                                Array.Copy(SerializedValue, 0, _Serialized, Position, SerializedValue.Length);
+                                             };
 
-            return vv => Func(this.GetGetFieldDelegate<TSource, TValue>(
-                                  fieldDeclaringType.GetField(fieldName,
-                                                              BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-                             )(vv));
 
         }
 
@@ -184,6 +192,8 @@ namespace de.ahzf.Vanaheimr.Duron
         private void ReflectStruct(Type DeclaringType)//, ref StringBuilder _Schema, ref List<Func<T, Byte[]>> _Serializer)
         {
 
+            var Position = 0U;
+
             _Schema.AppendLine("{");
 
             #region for...
@@ -192,6 +202,20 @@ namespace de.ahzf.Vanaheimr.Duron
             {
 
                 var Attributes = FieldInfo.GetCustomAttributes(false);
+
+                #region Find and process FixedPositionAttribute
+
+                var _FixedPositionAttribute = (from   CustomAttribute
+                                               in     Attributes
+                                               where  CustomAttribute as FixedPositionAttribute != null
+                                               select CustomAttribute as FixedPositionAttribute).FirstOrDefault();
+
+                if (_FixedPositionAttribute != null)
+                    Position = _FixedPositionAttribute.Position;
+                else
+                    Position = _StructSize;
+
+                #endregion
 
                 if (Attributes.Any(a => (a as NonSerializedAttribute) != null))
                 { }
@@ -204,9 +228,10 @@ namespace de.ahzf.Vanaheimr.Duron
 
                         _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
 
-                        _Serializer.Add(GetGetFieldDelegate2<T, Int32>(DeclaringType,
-                                                                       FieldInfo.Name,
-                                                                       value => BitConverter.GetBytes(value)));
+                        FieldSerializers.Add(CreateFieldSerializer<T, Int32>(DeclaringType,
+                                                                             FieldInfo.Name,
+                                                                             value => BitConverter.GetBytes(value),
+                                                                             Position));
 
                         _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
 
@@ -217,9 +242,10 @@ namespace de.ahzf.Vanaheimr.Duron
 
                         _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
 
-                        _Serializer.Add(GetGetFieldDelegate2<T, Int64>(DeclaringType,
-                                                                       FieldInfo.Name,
-                                                                       value => BitConverter.GetBytes(value)));
+                        FieldSerializers.Add(CreateFieldSerializer<T, Int64>(DeclaringType,
+                                                                             FieldInfo.Name,
+                                                                             value => BitConverter.GetBytes(value),
+                                                                             Position));
 
                         _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
 
@@ -307,19 +333,26 @@ namespace de.ahzf.Vanaheimr.Duron
 
 
 
-        public Byte[] Serialize(T myT)
+        public Byte[] Serialize(T ValueT)
         {
 
-            var bb = new Byte[StructSize];
-            var i = 0;
+            for (var i = _StructSize - 1; i > 0; i--)
+                InternalCache[i] = 0x00;
 
-            foreach (var bytearray in from func in _Serializer select func(myT))
-            {
-                Array.Copy(bytearray, 0, bb, i, bytearray.Length);
-                i += bytearray.Length;
-            }
+            //var j = 0;
 
-            return bb;
+            foreach (var FieldSerializer in FieldSerializers)
+                FieldSerializer(ValueT, InternalCache);
+
+            //foreach (var SerializedValue in from   ValueSerializer
+            //                                in     Serializer
+            //                                select ValueSerializer(ValueT))
+            //{
+            //    Array.Copy(SerializedValue.Bytes, 0, InternalCache, j, SerializedValue.Bytes.Length);
+            //    j += SerializedValue.Bytes.Length;
+            //}
+
+            return InternalCache;
 
         }
 
