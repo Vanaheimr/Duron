@@ -24,16 +24,35 @@ using System;
 namespace de.ahzf.Vanaheimr.Duron
 {
 
+    /// <summary>
+    /// Defines the size of the serialized value within the serialization byte array.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public sealed class FixedSizeAttribute : Attribute
     {
 
+        #region Position
+
+        /// <summary>
+        /// The size of the serialized value within the serialization byte array.
+        /// </summary>
         public UInt32 Size { get; private set; }
+
+        #endregion
+
+        #region FixedPositionAttribute(Position)
+
+        /// <summary>
+        /// Defines the size of the serialized value within the serialization byte array.
+        /// </summary>
+        /// <param name="Size">The size of the serialized value within the serialization byte array.</param>
 
         public FixedSizeAttribute(UInt32 Size)
         {
             this.Size = Size;
         }
+
+        #endregion
 
     }
 

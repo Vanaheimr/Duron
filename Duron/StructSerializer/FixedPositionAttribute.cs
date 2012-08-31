@@ -24,16 +24,34 @@ using System;
 namespace de.ahzf.Vanaheimr.Duron
 {
 
+    /// <summary>
+    /// Defines the position of the serialized value within the serialization byte array.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public sealed class FixedPositionAttribute : Attribute
     {
 
+        #region Position
+
+        /// <summary>
+        /// The position of the serialized value within the serialization byte array.
+        /// </summary>
         public UInt32 Position { get; private set; }
 
+        #endregion
+
+        #region FixedPositionAttribute(Position)
+
+        /// <summary>
+        /// Defines the position of the serialized value within the serialization byte array.
+        /// </summary>
+        /// <param name="Position">The position of the serialized value within the serialization byte array.</param>
         public FixedPositionAttribute(UInt32 Position)
         {
             this.Position = Position;
         }
+
+        #endregion
 
     }
 

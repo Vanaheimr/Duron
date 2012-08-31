@@ -33,7 +33,7 @@ namespace TestApplication1
         public UInt64 subdata2;
     }
 
-    public struct myData
+    public struct Data
     {
 
         private byte PrivateData;
@@ -64,7 +64,7 @@ namespace TestApplication1
         {
 
             var filename = @"sensordata.bin";
-            var mmf = new MemoryMappedFile<myData>(filename, 1024);
+            var mmf = new MemoryMappedFile<Data>(filename, 1024);
             mmf.Open();
             //var StructSize = mmf.StructSize;
 
@@ -81,11 +81,11 @@ namespace TestApplication1
         public static void StartStructSer()
         {
 
-            var structser = new StructSerializer<myData>();
+            var structser = new StructSerializer<Data>();
             var StructSize = structser.StructSize;
 
-            var x1 = structser.Serialize(new myData() { data1 = 12, data2 = -12 });
-            var x2 = structser.Serialize(new myData() { data1 = 13, data2 = -13 });
+            var x1 = structser.Serialize(new Data() { data1 = 12, data2 = -12 });
+            var x2 = structser.Serialize(new Data() { data1 = 13, data2 = -13 });
 
         }
 

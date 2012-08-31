@@ -28,19 +28,24 @@ using System.Runtime.InteropServices;
 using System.Text;
 //using System.Numerics;
 using System.Linq.Expressions;
+using System.Diagnostics;
 
 #endregion
 
 namespace de.ahzf.Vanaheimr.Duron
 {
 
+    /// <summary>
+    /// Creates a serializer for the given struct.
+    /// </summary>
+    /// <typeparam name="T">A struct to serialize.</typeparam>
     public class StructSerializer<T>
         where T : struct
     {
 
         #region Data
 
-        private List<Action<T, Byte[]>> FieldSerializers;
+        private List<FieldSerializer<T>> FieldSerializers;
         private readonly Byte[] InternalCache;
 
         #endregion
@@ -105,7 +110,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
             this.Padding     = Padding;
             this._Schema     = new StringBuilder();
-            this.FieldSerializers  = new List<Action<T, Byte[]>>();
+            this.FieldSerializers  = new List<FieldSerializer<T>>();
 
             ReflectStruct(typeof(T));
 
@@ -119,37 +124,63 @@ namespace de.ahzf.Vanaheimr.Duron
 
 
 
+        #region CreateFieldSerializer<TSource, TValue>(TypeOfStruct, FieldName, Serializator, Position, Length)
 
-        public Action<TSource, Byte[]> CreateFieldSerializer<TSource, TValue>(Type fieldDeclaringType, String fieldName, Func<TValue, Byte[]> SerializationFunc, UInt32 Position)
+        /// <summary>
+        /// Create a delegate to read the given field value from the struct and serialize it to the given byte array.</returns>
+        /// </summary>
+        /// <typeparam name="TSource">The type of the struct.</typeparam>
+        /// <typeparam name="TValue">The type of the field to read.</typeparam>
+        /// <param name="TypeOfStruct">The type of the field to read.</typeparam>
+        /// <param name="FieldName">The name of the field to read.</param>
+        /// <param name="Serializator">A delegate to serialize the type of the given field.</param>
+        /// <param name="Position">The position within the resulting array of bytes where to start the serialization.</param>
+        /// <param name="Length">The number of bytes of the field value to serialize.</param>
+        public FieldSerializer<TSource> CreateFieldSerializer<TSource, TValue>(Type                 TypeOfStruct,
+                                                                              String               FieldName,
+                                                                              Func<TValue, Byte[]> Serializator,
+                                                                              UInt32               Position,
+                                                                              UInt32               Length)
         {
 
-            return (_Struct, _Serialized) => {
-                                                var SerializedValue = SerializationFunc(
-                                                                          this.GetGetFieldDelegate<TSource, TValue>(
-                                                                              fieldDeclaringType.GetField(fieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-                                                                          )
-                                                                          (_Struct));
-                                                Array.Copy(SerializedValue, 0, _Serialized, Position, SerializedValue.Length);
-                                             };
+            Debug.WriteLine("CreateFieldSerializer(" + FieldName + ")... and not too often...");
 
+            var GetValueOfFieldDelegate = CreateGetValueOfFieldDelegate<TSource, TValue>(TypeOfStruct.GetField(FieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public));
+
+            return (_Struct, _Serialized) => Array.Copy(Serializator(GetValueOfFieldDelegate(_Struct)), 0, _Serialized, Position, Length);
 
         }
 
+        #endregion
 
-        public Func<TSource, TValue> GetGetFieldDelegate<TSource, TValue>(FieldInfo fieldInfo)
+        #region CreateGetValueOfFieldDelegate<TSource, TValue>(FieldInfo)
+
+        /// <summary>
+        /// Create a delegate to return the value of a field within a struct.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the struct.</typeparam>
+        /// <typeparam name="TValue">The type of the field to read.</typeparam>
+        /// <param name="FieldInfo"></param>
+        public Func<TSource, TValue> CreateGetValueOfFieldDelegate<TSource, TValue>(FieldInfo FieldInfo)
         {
 
-            if (fieldInfo == null) throw new ArgumentNullException("fieldInfo");
+            Debug.WriteLine("CreateGetValueOfFieldDelegate(" + FieldInfo.Name + ")... and not too often...");
 
-            var sourceParameterExpression = Expression.Parameter(typeof(TSource), "source");
-            var fieldMemberExpression     = Expression.Field(this.GetCastOrConvertExpression(sourceParameterExpression, fieldInfo.DeclaringType), fieldInfo);
-            var lambdaExpression          = Expression.Lambda(typeof(Func<TSource, TValue>),
-                                                              this.GetCastOrConvertExpression(fieldMemberExpression, typeof(TValue)),
-                                                              sourceParameterExpression);
+            var SourceParameterExpression = Expression.Parameter(typeof(TSource), "source");
+            var FieldMemberExpression     = Expression.Field(GetCastOrConvertExpression(SourceParameterExpression, FieldInfo.DeclaringType), FieldInfo);
+            var LambdaExpression          = Expression.Lambda(typeof(Func<TSource, TValue>),
+                                                              this.GetCastOrConvertExpression(FieldMemberExpression, typeof(TValue)),
+                                                              SourceParameterExpression);
             
-            return (Func<TSource, TValue>) lambdaExpression.Compile();
+            return (Func<TSource, TValue>) LambdaExpression.Compile();
 
         }
+
+        #endregion
+
+
+
+        #region GetCastOrConvertExpression(expression, targetType)
 
         private Expression GetCastOrConvertExpression(Expression expression, Type targetType)
         {
@@ -172,6 +203,10 @@ namespace de.ahzf.Vanaheimr.Duron
 
         }
 
+        #endregion
+
+        #region IsNullableType(type)
+
         public static bool IsNullableType(Type type)
         {
 
@@ -188,8 +223,13 @@ namespace de.ahzf.Vanaheimr.Duron
 
         }
 
+        #endregion
 
-        private void ReflectStruct(Type DeclaringType)//, ref StringBuilder _Schema, ref List<Func<T, Byte[]>> _Serializer)
+
+
+        #region ReflectStruct(DeclaringType)
+
+        private void ReflectStruct(Type DeclaringType)
         {
 
             var Position = 0U;
@@ -226,12 +266,13 @@ namespace de.ahzf.Vanaheimr.Duron
                     if (FieldInfo.FieldType.Equals(typeof(Int32)))
                     {
 
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
+                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + Marshal.SizeOf(FieldInfo.FieldType) + "\", \"position\": \"" + Position + "\" },");
 
                         FieldSerializers.Add(CreateFieldSerializer<T, Int32>(DeclaringType,
                                                                              FieldInfo.Name,
                                                                              value => BitConverter.GetBytes(value),
-                                                                             Position));
+                                                                             Position,
+                                                                             (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
 
                         _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
 
@@ -240,12 +281,13 @@ namespace de.ahzf.Vanaheimr.Duron
                     else if (FieldInfo.FieldType.Equals(typeof(Int64)))
                     {
 
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
+                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + Marshal.SizeOf(FieldInfo.FieldType) + "\", \"position\": \"" + Position + "\" },");
 
                         FieldSerializers.Add(CreateFieldSerializer<T, Int64>(DeclaringType,
                                                                              FieldInfo.Name,
                                                                              value => BitConverter.GetBytes(value),
-                                                                             Position));
+                                                                             Position,
+                                                                             (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
 
                         _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
 
@@ -269,7 +311,7 @@ namespace de.ahzf.Vanaheimr.Duron
                              )
                     {
 
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
+                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + Marshal.SizeOf(FieldInfo.FieldType) + "\", \"position\": \"" + Position + "\" },");
 
                     }
 
@@ -301,7 +343,11 @@ namespace de.ahzf.Vanaheimr.Duron
 
                         if (_FixedSizeAttribute != null)
                         {
-                            _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + _FixedSizeAttribute.Size + " bytes\",");
+
+                            _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + _FixedSizeAttribute.Size + "\", \"position\": \"" + Position + "\" },");
+
+                            _StructSize += _FixedSizeAttribute.Size;
+
                         }
 
                         else
@@ -325,15 +371,13 @@ namespace de.ahzf.Vanaheimr.Duron
 
         }
 
+        #endregion
 
 
 
+        #region SerializeCached(ValueT)
 
-
-
-
-
-        public Byte[] Serialize(T ValueT)
+        public Byte[] SerializeCached(T ValueT)
         {
 
             for (var i = InternalCache.Length - 1; i > 0; i--)
@@ -345,6 +389,41 @@ namespace de.ahzf.Vanaheimr.Duron
             return InternalCache;
 
         }
+
+        #endregion
+
+        #region Serialize(ValueT)
+
+        public Byte[] Serialize(T ValueT)
+        {
+
+            var ByteArray = new Byte[StructSize];
+
+            foreach (var FieldSerializer in FieldSerializers)
+                FieldSerializer(ValueT, ByteArray);
+
+            return ByteArray;
+
+        }
+
+        #endregion
+
+        #region Serialize(ValueT, ByteArray)
+
+        public Byte[] SerializeNew(T ValueT, Byte[] ByteArray, UInt32 Position = 0)
+        {
+
+            if (ByteArray.Length < _StructSize)
+                throw new ArgumentException("The given array of bytes is too small!", "ByteArray");
+
+            foreach (var FieldSerializer in FieldSerializers)
+                FieldSerializer(ValueT, ByteArray);
+
+            return ByteArray;
+
+        }
+
+        #endregion
 
 
     }
