@@ -40,6 +40,7 @@ namespace TestApplication1
 
         public int data1;
 
+        [FixedPosition(5)]
         public Int64 data2;
 
         // Currently out-of-order :(

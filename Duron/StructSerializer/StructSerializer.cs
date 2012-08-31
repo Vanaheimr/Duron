@@ -336,21 +336,11 @@ namespace de.ahzf.Vanaheimr.Duron
         public Byte[] Serialize(T ValueT)
         {
 
-            for (var i = _StructSize - 1; i > 0; i--)
+            for (var i = InternalCache.Length - 1; i > 0; i--)
                 InternalCache[i] = 0x00;
-
-            //var j = 0;
 
             foreach (var FieldSerializer in FieldSerializers)
                 FieldSerializer(ValueT, InternalCache);
-
-            //foreach (var SerializedValue in from   ValueSerializer
-            //                                in     Serializer
-            //                                select ValueSerializer(ValueT))
-            //{
-            //    Array.Copy(SerializedValue.Bytes, 0, InternalCache, j, SerializedValue.Bytes.Length);
-            //    j += SerializedValue.Bytes.Length;
-            //}
 
             return InternalCache;
 
