@@ -227,6 +227,9 @@ namespace de.ahzf.Vanaheimr.Duron
 
 
 
+        
+
+
         #region ReflectStruct(DeclaringType)
 
         private void ReflectStruct(Type DeclaringType)
@@ -266,7 +269,7 @@ namespace de.ahzf.Vanaheimr.Duron
                     if (FieldInfo.FieldType.Equals(typeof(Int32)))
                     {
 
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + Marshal.SizeOf(FieldInfo.FieldType) + "\", \"position\": \"" + Position + "\" },");
+                        _Schema.AppendFieldInfo(FieldInfo, Position, (UInt32) Marshal.SizeOf(FieldInfo.FieldType));
 
                         FieldSerializers.Add(CreateFieldSerializer<T, Int32>(DeclaringType,
                                                                              FieldInfo.Name,
@@ -281,7 +284,7 @@ namespace de.ahzf.Vanaheimr.Duron
                     else if (FieldInfo.FieldType.Equals(typeof(Int64)))
                     {
 
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + Marshal.SizeOf(FieldInfo.FieldType) + "\", \"position\": \"" + Position + "\" },");
+                        _Schema.AppendFieldInfo(FieldInfo, Position, (UInt32) Marshal.SizeOf(FieldInfo.FieldType));
 
                         FieldSerializers.Add(CreateFieldSerializer<T, Int64>(DeclaringType,
                                                                              FieldInfo.Name,
@@ -311,7 +314,7 @@ namespace de.ahzf.Vanaheimr.Duron
                              )
                     {
 
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + Marshal.SizeOf(FieldInfo.FieldType) + "\", \"position\": \"" + Position + "\" },");
+                        _Schema.AppendFieldInfo(FieldInfo, Position, (UInt32) Marshal.SizeOf(FieldInfo.FieldType));
 
                     }
 
@@ -344,7 +347,7 @@ namespace de.ahzf.Vanaheimr.Duron
                         if (_FixedSizeAttribute != null)
                         {
 
-                            _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : { \"type\" : " + "\"" + FieldInfo.FieldType + "\", \"size\": \"" + _FixedSizeAttribute.Size + "\", \"position\": \"" + Position + "\" },");
+                            _Schema.AppendFieldInfo(FieldInfo, Position, _FixedSizeAttribute.Size);
 
                             _StructSize += _FixedSizeAttribute.Size;
 

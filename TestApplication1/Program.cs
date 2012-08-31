@@ -84,8 +84,11 @@ namespace TestApplication1
             var structser = new StructSerializer<Data>();
             var StructSize = structser.StructSize;
 
-            var x1 = structser.Serialize(new Data() { data1 = 12, data2 = -12 });
-            var x2 = structser.Serialize(new Data() { data1 = 13, data2 = -13 });
+            var x1 = structser.Serialize(new Data() { data1 =             12, data2 =    -12 });
+            var x2 = structser.Serialize(new Data() { data1 =           1024, data2 =  -1024 });
+            var x3 = structser.Serialize(new Data() { data1 =          80000, data2 = -80000 });
+            var x4 = structser.Serialize(new Data() { data1 = Int32.MaxValue, data2 =    -13 });
+            var x5 = structser.Serialize(new Data() { data1 = Int32.MinValue, data2 =    -13 });
 
         }
 
