@@ -34,7 +34,7 @@ using System.Linq.Expressions;
 namespace de.ahzf.Vanaheimr.Duron
 {
 
-    public class SharedMemory<T> : IDisposable
+    public class MemoryMappedFile<T> : IDisposable
         where T : struct
     {
 
@@ -44,14 +44,9 @@ namespace de.ahzf.Vanaheimr.Duron
         private MemoryMappedViewAccessor accessor;
 
         private UInt64  WindowOffset;
-        private UInt32  WindowSize;
-
-        private readonly UInt32 ItemSize;
 
         private Mutex smLock;
         private Boolean locked;
-
-        private List<Func<T, Byte[]>> _Serializer;
 
         #endregion
 
@@ -60,248 +55,25 @@ namespace de.ahzf.Vanaheimr.Duron
         /// <summary>
         /// The name of the underlying file.
         /// </summary>
-        public String Filename { get; private set; }
+        public String Filename    { get; private set; }
 
-        /// <summary>
-        /// The padding used for every serialized block in bytes.
-        /// Generally it is usefull to pad everything to 8 byte boundaries.
-        /// </summary>
-        public UInt32 Padding { get; private set; }
-
-
-        private StringBuilder _Schema;
-
-        public String Schema
-        {
-            get
-            {
-                return _Schema.ToString();
-            }
-        }
-
-
-        private UInt32 _StructSize;
-
-        public UInt32 StructSize
-        {
-            get
-            {
-                
-                if (_StructSize % Padding == 0)
-                    return _StructSize;
-
-                return (_StructSize / Padding + 1) * Padding;
-
-            }
-        }
+        public UInt32 WindowSize  { get; private set; }
 
         #endregion
 
         #region Constructor(s)
 
-        public SharedMemory(String Filename, UInt32 WindowSize, UInt32 Padding = 8)
+        public MemoryMappedFile(String Filename, UInt32 WindowSize, UInt32 Padding = 8)
         {
-
             this.Filename   = Filename;
             this.WindowSize = WindowSize;
-            this.ItemSize   = 0;
-            this.Padding    = Padding;
-
-            _Schema = new StringBuilder();
-            _Serializer = new List<Func<T, Byte[]>>();
-
-            ReflectStruct(typeof(T));//, ref ST, ref LT);
-
         }
 
         #endregion
 
 
 
-        public Func<TSource, Byte[]> GetGetFieldDelegate2<TSource, TValue>(Type fieldDeclaringType, String fieldName, Func<TValue, Byte[]> Func)
-        {
-
-            if (fieldName == null) throw new ArgumentNullException("fieldName");
-            if (fieldDeclaringType == null) throw new ArgumentNullException("fieldDeclaringType");
-
-            return vv => Func(this.GetGetFieldDelegate<TSource, TValue>(
-                                  fieldDeclaringType.GetField(fieldName,
-                                                              BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-                             )(vv));
-
-        }
-
-
-        public Func<TSource, TValue> GetGetFieldDelegate<TSource, TValue>(FieldInfo fieldInfo)
-        {
-
-            if (fieldInfo == null) throw new ArgumentNullException("fieldInfo");
-
-            var sourceParameterExpression = Expression.Parameter(typeof(TSource), "source");
-            var fieldMemberExpression     = Expression.Field(this.GetCastOrConvertExpression(sourceParameterExpression, fieldInfo.DeclaringType), fieldInfo);
-            var lambdaExpression          = Expression.Lambda(typeof(Func<TSource, TValue>),
-                                                              this.GetCastOrConvertExpression(fieldMemberExpression, typeof(TValue)),
-                                                              sourceParameterExpression);
-            
-            return (Func<TSource, TValue>) lambdaExpression.Compile();
-
-        }
-
-        private Expression GetCastOrConvertExpression(Expression expression, Type targetType)
-        {
-
-            // Check if a cast or conversion is required.
-            if (targetType.IsAssignableFrom(expression.Type))
-                return expression;
-
-            else
-            {
-
-                // Check if we can use the as operator for casting or if we must use the convert method
-                if (targetType.IsValueType && !IsNullableType(targetType))
-                    return Expression.Convert(expression, targetType);
-
-                else
-                    return Expression.TypeAs(expression, targetType);
-
-            }
-
-        }
-
-        public static bool IsNullableType(Type type)
-        {
-
-            if (type == null) throw new ArgumentNullException("type");
-
-            bool result = false;
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
-            {
-                result = true;
-            }
-
-            return result;
-
-        }
-
-
-        private void ReflectStruct(Type DeclaringType)//, ref StringBuilder _Schema, ref List<Func<T, Byte[]>> _Serializer)
-        {
-
-            _Schema.AppendLine("{");
-
-            #region for...
-
-            foreach (var FieldInfo in DeclaringType.GetFields(BindingFlags.Instance | BindingFlags.Public))
-            {
-
-                var Attributes = FieldInfo.GetCustomAttributes(false);
-
-                if (Attributes.Any(a => (a as NonSerializedAttribute) != null))
-                { }
-
-                else
-                {
-
-                    if (FieldInfo.FieldType.Equals(typeof(Int32)))
-                    {
-
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
-
-                        _Serializer.Add(GetGetFieldDelegate2<T, Int32>(DeclaringType,
-                                                                       FieldInfo.Name,
-                                                                       value => BitConverter.GetBytes(value)));
-
-                        _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
-
-                    }
-
-                    else if (FieldInfo.FieldType.Equals(typeof(Int64)))
-                    {
-
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
-
-                        _Serializer.Add(GetGetFieldDelegate2<T, Int64>(DeclaringType,
-                                                                       FieldInfo.Name,
-                                                                       value => BitConverter.GetBytes(value)));
-
-                        _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
-
-                    }
-
-                    else if ((FieldInfo.FieldType.Equals(typeof(Byte))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Int16))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt16))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt32))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt64))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Boolean))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Char))) ||
-                             (FieldInfo.FieldType.Equals(typeof(DateTime))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Decimal))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Double))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Guid))) ||
-                             (FieldInfo.FieldType.Equals(typeof(SByte))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Single))) ||
-                             (FieldInfo.FieldType.Equals(typeof(TimeSpan)))
-                             //(FieldInfo.FieldType.Equals(typeof(Complex)))
-                             )
-                    {
-
-                        _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + Marshal.SizeOf(FieldInfo.FieldType) + " bytes\",");
-
-                    }
-
-                    else if ((FieldInfo.FieldType.Equals(typeof(String))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Uri))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Byte[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Int16[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt16[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Int32[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt32[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Int64[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt64[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Boolean[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Char[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(DateTime[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Decimal[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Double[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Guid[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(SByte[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Single[]))) ||
-                             (FieldInfo.FieldType.Equals(typeof(TimeSpan[])))
-                            )
-                    {
-
-                        var _FixedSizeAttribute = FieldInfo.GetCustomAttributes(false).
-                                                            Select(x => x as FixedSizeAttribute).
-                                                            Where(x => x != null).
-                                                            First();
-
-                        if (_FixedSizeAttribute != null)
-                        {
-                            _Schema.AppendLine("\"" + FieldInfo.Name + "\"" + " : " + "\"" + FieldInfo.FieldType + " of " + _FixedSizeAttribute.Size + " bytes\",");
-                        }
-
-                        else
-                            throw new Exception("Serializing the '" + FieldInfo.Name + "' field of type '" + FieldInfo.FieldType.FullName.ToString() + "' demands the 'FixedSize(...)'-attribute!");
-
-                    }
-
-                    else
-                    {
-                        ReflectStruct(FieldInfo.FieldType);//, ref _Schema, ref _Serializer);
-                    }
-
-                }
-
-            }
-
-            #endregion
-
-            _Schema.Remove(_Schema.Length - 3, 1);
-            _Schema.AppendLine("}");
-
-        }
+        
 
 
 
@@ -363,21 +135,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
 
 
-        public Byte[] Serialize(T myT)
-        {
-
-            var bb = new Byte[StructSize];
-            var i = 0;
-
-            foreach (var bytearray in from func in _Serializer select func(myT))
-            {
-                Array.Copy(bytearray, 0, bb, i, bytearray.Length);
-                i += bytearray.Length;
-            }
-
-            return bb;
-
-        }
+        
 
 
 

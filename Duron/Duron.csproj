@@ -42,7 +42,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MemoryMapped\FixedSizeAttribute.cs" />
+    <Compile Include="StructSerializer\StructSerializer.cs" />
+    <Compile Include="StructSerializer\FixedSizeAttribute.cs" />
     <Compile Include="MemoryMapped\MMFiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoundRobinDatabase\Helpers\AggregationFunction.cs" />

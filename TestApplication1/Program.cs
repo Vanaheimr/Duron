@@ -63,17 +63,28 @@ namespace TestApplication1
         {
 
             var filename = @"sensordata.bin";
-            var mmf = new SharedMemory<myData>(filename, 1024);
+            var mmf = new MemoryMappedFile<myData>(filename, 1024);
             mmf.Open();
-            var StructSize = mmf.StructSize;
+            //var StructSize = mmf.StructSize;
 
-            var x1 = mmf.Serialize(new myData() { data1 = 12, data2 = -12 });
-            var x2 = mmf.Serialize(new myData() { data1 = 13, data2 = -13 });
+            //var x1 = mmf.Serialize(new myData() { data1 = 12, data2 = -12 });
+            //var x2 = mmf.Serialize(new myData() { data1 = 13, data2 = -13 });
 
             //using (var view = mmf.CreateViewAccessor(0, 1024, MemoryMappedFileAccess.Write))
             //{
             //    //view.WriteArray(0, whiteRow, 0, whiteRow.Length);
             //}
+
+        }
+
+        public static void StartStructSer()
+        {
+
+            var structser = new StructSerializer<myData>();
+            var StructSize = structser.StructSize;
+
+            var x1 = structser.Serialize(new myData() { data1 = 12, data2 = -12 });
+            var x2 = structser.Serialize(new myData() { data1 = 13, data2 = -13 });
 
         }
 
@@ -99,6 +110,7 @@ namespace TestApplication1
         public static void Main(string[] args)
         {
             StartMMF();
+            StartStructSer();
             StartRRD();
         }
 
