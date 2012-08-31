@@ -1,0 +1,13 @@
+*.pidb
+*.VisualState.xml
+*.suo
+*.csproj.user
+*.vsp
+*.app.ctl
+*.krn.ctl
+*.psess
+*/TestResult.xml
+*/[oO]bj
+*/[bB]in
+libs/*/obj
+libs/*/bin
