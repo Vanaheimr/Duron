@@ -51,7 +51,7 @@ namespace TestApplication1
         public static void StartStructSer()
         {
 
-            var structser = new StructSerializer<Data>();
+            var structser = new SchemaSerializer<Data>();
             var StructSize = structser.StructSize;
 
             Byte[] x1 = null; 
@@ -67,6 +67,28 @@ namespace TestApplication1
             var x3 = structser.Serialize(new Data() { data1 =          80000, data2 = -80000 });
             var x4 = structser.Serialize(new Data() { data1 = Int32.MaxValue, data2 =    -13 });
             var x5 = structser.Serialize(new Data() { data1 = Int32.MinValue, data2 =    -13 });
+
+        }
+
+        public static void StartStructSer2()
+        {
+
+            var structser = new SchemaSerializer<Data2>();
+            var StructSize = structser.StructSize;
+
+            Byte[] x1 = null; 
+            var sw = new Stopwatch();
+            sw.Start();
+            for (var i=0;i<100000;i++)
+                x1 = structser.SerializeCached(new Data2() { data1 =             12, data2 =    -12 }, ClearCache: false);
+            sw.Stop();
+
+            Console.WriteLine(sw.ElapsedMilliseconds);
+
+            var x2 = structser.Serialize(new Data2() { data1 =           1024, data2 =  -1024 });
+            var x3 = structser.Serialize(new Data2() { data1 =          80000, data2 = -80000 });
+            var x4 = structser.Serialize(new Data2() { data1 = Int32.MaxValue, data2 =    -13 });
+            var x5 = structser.Serialize(new Data2() { data1 = Int32.MinValue, data2 =    -13 });
 
         }
 
@@ -93,6 +115,7 @@ namespace TestApplication1
         {
             StartMMF();
             StartStructSer();
+            StartStructSer2();
             StartRRD();
         }
 

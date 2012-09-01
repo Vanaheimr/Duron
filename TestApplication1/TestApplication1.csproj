@@ -50,6 +50,14 @@
     <Compile Include="SensorData.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Illias\Commons\Commons.csproj">
+      <Project>{16C85DF8-5DE6-4A9F-9FC7-7CA5B0440DF3}</Project>
+      <Name>Commons</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Styx\Styx\Styx.csproj">
+      <Project>{3949790D-8591-4101-9E4D-CE7A758E7409}</Project>
+      <Name>Styx</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Duron\Duron.csproj">
       <Project>{F25A7D44-7784-4EB2-819A-5D3305021CE0}</Project>
       <Name>Duron</Name>

@@ -29,6 +29,7 @@ using System.Text;
 //using System.Numerics;
 using System.Linq.Expressions;
 using System.Diagnostics;
+using de.ahzf.Vanaheimr.Styx;
 
 #endregion
 
@@ -36,11 +37,10 @@ namespace de.ahzf.Vanaheimr.Duron
 {
 
     /// <summary>
-    /// Creates a serializer for the given struct.
+    /// Create a serializer for the given struct or class.
     /// </summary>
-    /// <typeparam name="T">A struct to serialize.</typeparam>
-    public class StructSerializer<T>
-        where T : struct
+    /// <typeparam name="T">A struct or class to serialize.</typeparam>
+    public class SchemaSerializer<T> : ANewArrow<T, Byte[]>
     {
 
         #region Data
@@ -99,14 +99,14 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #region Constructor(s)
 
-        #region StructSerializer(Padding = 8, UseReflection = true)
+        #region SchemaSerializer(Padding = 8, UseReflection = true)
 
         /// <summary>
-        /// Create a new struct serializer.
+        /// Create a serializer for the given struct or class.
         /// </summary>
         /// <param name="Padding">The serialized struct will have a total size equals to a multiply of this value.</param>
         /// <param name="UseReflection">Use reflection to create the serializator.</param>
-        public StructSerializer(UInt32 Padding = 8, Boolean UseReflection = true)
+        public SchemaSerializer(UInt32 Padding = 8, Boolean UseReflection = true)
         {
 
             this.Padding           = Padding;
@@ -275,8 +275,8 @@ namespace de.ahzf.Vanaheimr.Duron
                         FieldSerializers.Add(CreateFieldSerializer<T, Int32>(DeclaringType,
                                                                              FieldInfo.Name,
                                                                              value => BitConverter.GetBytes(value),
-                                                                             Position,
-                                                                             (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
+                                                                             Position: Position,
+                                                                             Length:   (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
 
                         _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
 
@@ -430,6 +430,19 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #endregion
 
+
+
+        protected override Boolean ProcessMessage(T MessageIn, out Byte[] MessageOut)
+        {
+
+            MessageOut = new Byte[StructSize];
+
+            foreach (var FieldSerializer in FieldSerializers)
+                FieldSerializer(MessageIn, MessageOut);
+
+            return true;
+
+        }
 
     }
 
