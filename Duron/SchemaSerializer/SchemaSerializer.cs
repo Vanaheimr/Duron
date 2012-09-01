@@ -230,6 +230,31 @@ namespace de.ahzf.Vanaheimr.Duron
         #endregion
 
 
+        private Boolean IfFieldOfType<T2>(Type DeclaringType, FieldInfo FieldInfo, UInt32 Position, Func<T2, Byte[]> Func)
+        {
+            
+            if (FieldInfo.FieldType.Equals(typeof(T2)))
+                    {
+
+                        _Schema.AppendFieldInfo(FieldInfo, Position, (UInt32) Marshal.SizeOf(FieldInfo.FieldType));
+
+                        FieldSerializers.Add(CreateFieldSerializer<T, T2>(DeclaringType,
+                                                                          FieldInfo.Name,
+                                                                          Func, //value => BitConverter.GetBytes(value),
+                                                                          Position,
+                                                                          (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
+
+                        _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
+
+                        return true;
+
+                    }
+
+            return false;
+
+        }
+
+
 
         #region ReflectStruct(DeclaringType)
 
@@ -267,50 +292,28 @@ namespace de.ahzf.Vanaheimr.Duron
                 else
                 {
 
-                    if (FieldInfo.FieldType.Equals(typeof(Int32)))
-                    {
+                         if (IfFieldOfType<Byte>    (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<Int16>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<Int32>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<Int64>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<Int64>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
 
-                        _Schema.AppendFieldInfo(FieldInfo, Position, (UInt32) Marshal.SizeOf(FieldInfo.FieldType));
+                    else if (IfFieldOfType<SByte>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<UInt16>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<UInt32>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<UInt64>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
 
-                        FieldSerializers.Add(CreateFieldSerializer<T, Int32>(DeclaringType,
-                                                                             FieldInfo.Name,
-                                                                             value => BitConverter.GetBytes(value),
-                                                                             Position: Position,
-                                                                             Length:   (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
+                    else if (IfFieldOfType<Single>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<Double>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldOfType<Char>    (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
 
-                        _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
+                    else if (IfFieldOfType<Guid>    (DeclaringType, FieldInfo, Position, value => value.ToByteArray())) { }
+                    else if (IfFieldOfType<DateTime>(DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value.ToBinary()))) { }
+                    else if (IfFieldOfType<TimeSpan>(DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value.Ticks))) { }
 
-                    }
-
-                    else if (FieldInfo.FieldType.Equals(typeof(Int64)))
-                    {
-
-                        _Schema.AppendFieldInfo(FieldInfo, Position, (UInt32) Marshal.SizeOf(FieldInfo.FieldType));
-
-                        FieldSerializers.Add(CreateFieldSerializer<T, Int64>(DeclaringType,
-                                                                             FieldInfo.Name,
-                                                                             value => BitConverter.GetBytes(value),
-                                                                             Position,
-                                                                             (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
-
-                        _StructSize += (UInt32) Marshal.SizeOf(FieldInfo.FieldType);
-
-                    }
-
-                    else if ((FieldInfo.FieldType.Equals(typeof(Byte))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Int16))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt16))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt32))) ||
-                             (FieldInfo.FieldType.Equals(typeof(UInt64))) ||
+                    else if (
                              (FieldInfo.FieldType.Equals(typeof(Boolean))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Char))) ||
-                             (FieldInfo.FieldType.Equals(typeof(DateTime))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Decimal))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Double))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Guid))) ||
-                             (FieldInfo.FieldType.Equals(typeof(SByte))) ||
-                             (FieldInfo.FieldType.Equals(typeof(Single))) ||
-                             (FieldInfo.FieldType.Equals(typeof(TimeSpan)))
+                             (FieldInfo.FieldType.Equals(typeof(Decimal)))                             
                              //(FieldInfo.FieldType.Equals(typeof(Complex)))
                              )
                     {
