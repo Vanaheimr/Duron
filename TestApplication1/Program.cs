@@ -20,6 +20,7 @@
 using System;
 
 using de.ahzf.Vanaheimr.Duron;
+using System.Diagnostics;
 
 #endregion
 
@@ -84,7 +85,15 @@ namespace TestApplication1
             var structser = new StructSerializer<Data>();
             var StructSize = structser.StructSize;
 
-            var x1 = structser.Serialize(new Data() { data1 =             12, data2 =    -12 });
+            Byte[] x1 = null; 
+            var sw = new Stopwatch();
+            sw.Start();
+            for (var i=0;i<100000;i++)
+                x1 = structser.SerializeCached(new Data() { data1 =             12, data2 =    -12 }, ClearCache: false);
+            sw.Stop();
+
+            Console.WriteLine(sw.ElapsedMilliseconds);
+
             var x2 = structser.Serialize(new Data() { data1 =           1024, data2 =  -1024 });
             var x3 = structser.Serialize(new Data() { data1 =          80000, data2 = -80000 });
             var x4 = structser.Serialize(new Data() { data1 = Int32.MaxValue, data2 =    -13 });

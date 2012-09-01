@@ -127,27 +127,31 @@ namespace de.ahzf.Vanaheimr.Duron
         #region CreateFieldSerializer<TSource, TValue>(TypeOfStruct, FieldName, Serializator, Position, Length)
 
         /// <summary>
-        /// Create a delegate to read the given field value from the struct and serialize it to the given byte array.</returns>
+        /// Create a delegate to read the given field value from the declaring type and serialize it to the given byte array.</returns>
         /// </summary>
-        /// <typeparam name="TSource">The type of the struct.</typeparam>
+        /// <typeparam name="TSource">The declaring type (the struct or an embedded type).</typeparam>
         /// <typeparam name="TValue">The type of the field to read.</typeparam>
         /// <param name="TypeOfStruct">The type of the field to read.</typeparam>
         /// <param name="FieldName">The name of the field to read.</param>
         /// <param name="Serializator">A delegate to serialize the type of the given field.</param>
         /// <param name="Position">The position within the resulting array of bytes where to start the serialization.</param>
         /// <param name="Length">The number of bytes of the field value to serialize.</param>
-        public FieldSerializer<TSource> CreateFieldSerializer<TSource, TValue>(Type                 TypeOfStruct,
-                                                                              String               FieldName,
-                                                                              Func<TValue, Byte[]> Serializator,
-                                                                              UInt32               Position,
-                                                                              UInt32               Length)
+        public FieldSerializer<TSource> CreateFieldSerializer<TSource, TValue>(Type                 DeclaringType,
+                                                                               String               FieldName,
+                                                                               Func<TValue, Byte[]> Serializator,
+                                                                               UInt32               Position,
+                                                                               UInt32               Length)
         {
 
             Debug.WriteLine("CreateFieldSerializer(" + FieldName + ")... and not too often...");
 
-            var GetValueOfFieldDelegate = CreateGetValueOfFieldDelegate<TSource, TValue>(TypeOfStruct.GetField(FieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public));
+            //var GetValueOfField = DeclaringType.GetField(FieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+            //return (Instance, Serialized) => Array.Copy(Serializator((TValue) GetValueOfField.GetValue(Instance)), 0, Serialized, Position, Length);
 
-            return (_Struct, _Serialized) => Array.Copy(Serializator(GetValueOfFieldDelegate(_Struct)), 0, _Serialized, Position, Length);
+            // Seems to be twice as fast, as it avoid useless castings ;)
+            var GetValueOfFieldDelegate = CreateGetValueOfFieldDelegate<TSource, TValue>(DeclaringType.GetField(FieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public));
+
+            return (Instance, Serialized) => Array.Copy(Serializator(GetValueOfFieldDelegate(Instance)), 0, Serialized, Position, Length);
 
         }
 
@@ -177,8 +181,6 @@ namespace de.ahzf.Vanaheimr.Duron
         }
 
         #endregion
-
-
 
         #region GetCastOrConvertExpression(expression, targetType)
 
@@ -380,11 +382,12 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #region SerializeCached(ValueT)
 
-        public Byte[] SerializeCached(T ValueT)
+        public Byte[] SerializeCached(T ValueT, Boolean ClearCache = true)
         {
 
-            for (var i = InternalCache.Length - 1; i > 0; i--)
-                InternalCache[i] = 0x00;
+            if (ClearCache)
+                for (var i = InternalCache.Length - 1; i > 0; i--)
+                    InternalCache[i] = 0x00;
 
             foreach (var FieldSerializer in FieldSerializers)
                 FieldSerializer(ValueT, InternalCache);
