@@ -27,37 +27,6 @@ using System.Diagnostics;
 namespace TestApplication1
 {
 
-
-    public struct myData2
-    {
-        public int subdata1;
-        public UInt64 subdata2;
-    }
-
-    public struct Data
-    {
-
-        private byte PrivateData;
-
-        public int data1;
-
-        [FixedPosition(5)]
-        public Int64 data2;
-
-        // Currently out-of-order :(
-        //public myData2 data2;
-
-        [FixedSize(50)]
-        public String data3;
-
-        [FixedSize(30)]
-        public Byte[] data4;
-
-        //[NonSerialized]
-        //public Complex data5;
-
-    }
-
     public class Program
     {
 

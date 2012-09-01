@@ -99,22 +99,24 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #region Constructor(s)
 
-        #region StructSerializer(Padding = 8)
+        #region StructSerializer(Padding = 8, UseReflection = true)
 
         /// <summary>
         /// Create a new struct serializer.
         /// </summary>
         /// <param name="Padding">The serialized struct will have a total size equals to a multiply of this value.</param>
-        public StructSerializer(UInt32 Padding = 8)
+        /// <param name="UseReflection">Use reflection to create the serializator.</param>
+        public StructSerializer(UInt32 Padding = 8, Boolean UseReflection = true)
         {
 
-            this.Padding     = Padding;
-            this._Schema     = new StringBuilder();
+            this.Padding           = Padding;
+            this._Schema           = new StringBuilder();
             this.FieldSerializers  = new List<FieldSerializer<T>>();
 
-            ReflectStruct(typeof(T));
+            if (UseReflection)
+                ReflectStruct(typeof(T));
 
-            InternalCache    = new Byte[StructSize];
+            InternalCache          = new Byte[StructSize];
 
         }
 
@@ -124,7 +126,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
 
 
-        #region CreateFieldSerializer<TSource, TValue>(TypeOfStruct, FieldName, Serializator, Position, Length)
+        #region (private) CreateFieldSerializer<TSource, TValue>(TypeOfStruct, FieldName, Serializator, Position, Length)
 
         /// <summary>
         /// Create a delegate to read the given field value from the declaring type and serialize it to the given byte array.</returns>
@@ -136,11 +138,11 @@ namespace de.ahzf.Vanaheimr.Duron
         /// <param name="Serializator">A delegate to serialize the type of the given field.</param>
         /// <param name="Position">The position within the resulting array of bytes where to start the serialization.</param>
         /// <param name="Length">The number of bytes of the field value to serialize.</param>
-        public FieldSerializer<TSource> CreateFieldSerializer<TSource, TValue>(Type                 DeclaringType,
-                                                                               String               FieldName,
-                                                                               Func<TValue, Byte[]> Serializator,
-                                                                               UInt32               Position,
-                                                                               UInt32               Length)
+        private FieldSerializer<TSource> CreateFieldSerializer<TSource, TValue>(Type                 DeclaringType,
+                                                                                String               FieldName,
+                                                                                Func<TValue, Byte[]> Serializator,
+                                                                                UInt32               Position,
+                                                                                UInt32               Length)
         {
 
             Debug.WriteLine("CreateFieldSerializer(" + FieldName + ")... and not too often...");
@@ -157,7 +159,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #endregion
 
-        #region CreateGetValueOfFieldDelegate<TSource, TValue>(FieldInfo)
+        #region (private) CreateGetValueOfFieldDelegate<TSource, TValue>(FieldInfo)
 
         /// <summary>
         /// Create a delegate to return the value of a field within a struct.
@@ -165,7 +167,7 @@ namespace de.ahzf.Vanaheimr.Duron
         /// <typeparam name="TSource">The type of the struct.</typeparam>
         /// <typeparam name="TValue">The type of the field to read.</typeparam>
         /// <param name="FieldInfo"></param>
-        public Func<TSource, TValue> CreateGetValueOfFieldDelegate<TSource, TValue>(FieldInfo FieldInfo)
+        private Func<TSource, TValue> CreateGetValueOfFieldDelegate<TSource, TValue>(FieldInfo FieldInfo)
         {
 
             Debug.WriteLine("CreateGetValueOfFieldDelegate(" + FieldInfo.Name + ")... and not too often...");
@@ -182,7 +184,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #endregion
 
-        #region GetCastOrConvertExpression(expression, targetType)
+        #region (private) GetCastOrConvertExpression(expression, targetType)
 
         private Expression GetCastOrConvertExpression(Expression expression, Type targetType)
         {
@@ -207,9 +209,9 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #endregion
 
-        #region IsNullableType(type)
+        #region (private) IsNullableType(type)
 
-        public static bool IsNullableType(Type type)
+        public static Boolean IsNullableType(Type type)
         {
 
             if (type == null) throw new ArgumentNullException("type");
@@ -227,9 +229,6 @@ namespace de.ahzf.Vanaheimr.Duron
 
         #endregion
 
-
-
-        
 
 
         #region ReflectStruct(DeclaringType)

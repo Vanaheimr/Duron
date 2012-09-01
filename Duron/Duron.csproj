@@ -58,7 +58,6 @@
     <Compile Include="RoundRobinDatabase\Helpers\RRType.cs" />
     <Compile Include="RoundRobinDatabase\RRDBuilder.cs" />
     <Compile Include="RoundRobinDatabase\RRDElement.cs" />
-    <Compile Include="RoundRobinDatabase\SensorData.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
