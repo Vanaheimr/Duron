@@ -230,7 +230,7 @@ namespace de.ahzf.Vanaheimr.Duron
         #endregion
 
 
-        private Boolean IfFieldOfType<T2>(Type DeclaringType, FieldInfo FieldInfo, UInt32 Position, Func<T2, Byte[]> Func)
+        private Boolean IfFieldIs<T2>(Type DeclaringType, FieldInfo FieldInfo, UInt32 Position, Func<T2, Byte[]> Func)
         {
             
             if (FieldInfo.FieldType.Equals(typeof(T2)))
@@ -240,7 +240,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
                         FieldSerializers.Add(CreateFieldSerializer<T, T2>(DeclaringType,
                                                                           FieldInfo.Name,
-                                                                          Func, //value => BitConverter.GetBytes(value),
+                                                                          Func,
                                                                           Position,
                                                                           (UInt32) Marshal.SizeOf(FieldInfo.FieldType)));
 
@@ -292,24 +292,24 @@ namespace de.ahzf.Vanaheimr.Duron
                 else
                 {
 
-                         if (IfFieldOfType<Byte>    (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<Int16>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<Int32>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<Int64>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<Int64>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                         if (IfFieldIs<Byte>    (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<Int16>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<Int32>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<Int64>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<Int64>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
 
-                    else if (IfFieldOfType<SByte>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<UInt16>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<UInt32>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<UInt64>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<SByte>   (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<UInt16>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<UInt32>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<UInt64>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
 
-                    else if (IfFieldOfType<Single>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<Double>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
-                    else if (IfFieldOfType<Char>    (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<Single>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<Double>  (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
+                    else if (IfFieldIs<Char>    (DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value))) { }
 
-                    else if (IfFieldOfType<Guid>    (DeclaringType, FieldInfo, Position, value => value.ToByteArray())) { }
-                    else if (IfFieldOfType<DateTime>(DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value.ToBinary()))) { }
-                    else if (IfFieldOfType<TimeSpan>(DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value.Ticks))) { }
+                    else if (IfFieldIs<Guid>    (DeclaringType, FieldInfo, Position, value => value.ToByteArray())) { }
+                    else if (IfFieldIs<DateTime>(DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value.ToBinary()))) { }
+                    else if (IfFieldIs<TimeSpan>(DeclaringType, FieldInfo, Position, value => BitConverter.GetBytes(value.Ticks))) { }
 
                     else if (
                              (FieldInfo.FieldType.Equals(typeof(Boolean))) ||
@@ -364,7 +364,7 @@ namespace de.ahzf.Vanaheimr.Duron
 
                     else
                     {
-                        ReflectStruct(FieldInfo.FieldType);//, ref _Schema, ref _Serializer);
+                        ReflectStruct(FieldInfo.FieldType);
                     }
 
                 }
