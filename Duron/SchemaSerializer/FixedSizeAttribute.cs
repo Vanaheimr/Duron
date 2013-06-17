@@ -21,7 +21,7 @@ using System;
 
 #endregion
 
-namespace de.ahzf.Vanaheimr.Duron
+namespace eu.Vanaheimr.Duron
 {
 
     /// <summary>

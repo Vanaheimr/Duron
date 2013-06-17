@@ -19,12 +19,12 @@
 
 using System;
 
-using de.ahzf.Vanaheimr.Duron;
+using eu.Vanaheimr.Duron;
 using System.Diagnostics;
 
 #endregion
 
-namespace de.ahzf.Vanaheimr.Duron.UnitTests
+namespace eu.Vanaheimr.Duron.UnitTests
 {
 
     public struct TestSubdata

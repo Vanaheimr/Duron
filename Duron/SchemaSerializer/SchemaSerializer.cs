@@ -29,11 +29,12 @@ using System.Text;
 //using System.Numerics;
 using System.Linq.Expressions;
 using System.Diagnostics;
-using de.ahzf.Vanaheimr.Styx;
+
+using eu.Vanaheimr.Styx;
 
 #endregion
 
-namespace de.ahzf.Vanaheimr.Duron
+namespace eu.Vanaheimr.Duron
 {
 
     /// <summary>

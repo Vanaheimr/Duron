@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace de.ahzf.Vanaheimr.Duron
+namespace eu.Vanaheimr.Duron
 {
 
     public enum RRType

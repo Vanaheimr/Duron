@@ -22,11 +22,11 @@ using System.Linq;
 using System.Collections.Generic;
 
 using NUnit.Framework;
-using de.ahzf.Vanaheimr.Styx;
+using eu.Vanaheimr.Styx;
 
 #endregion
 
-namespace de.ahzf.Vanaheimr.Duron.UnitTests
+namespace eu.Vanaheimr.Duron.UnitTests
 {
 
     [TestFixture]
