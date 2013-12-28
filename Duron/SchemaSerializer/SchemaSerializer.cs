@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2010-2012 Achim 'ahzf' Friedland <achim@graph-database.org>
+ * Copyright (c) 2010-2012 Achim 'ahzf' Friedland <achim@graphdefined.org>
  * This file is part of Duron <http://www.github.com/Vanaheimr/Duron>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -31,6 +31,7 @@ using System.Linq.Expressions;
 using System.Diagnostics;
 
 using eu.Vanaheimr.Styx;
+using eu.Vanaheimr.Styx.Arrows;
 
 #endregion
 
@@ -41,7 +42,7 @@ namespace eu.Vanaheimr.Duron
     /// Create a serializer for the given struct or class.
     /// </summary>
     /// <typeparam name="T">A struct or class to serialize.</typeparam>
-    public class SchemaSerializer<T> : ANewArrow<T, Byte[]>
+    public class SchemaSerializer<T> : AbstractArrow<T, Byte[]>
     {
 
         #region Data

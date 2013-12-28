@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>de.ahzf.Vanaheimr.Duron</RootNamespace>
     <AssemblyName>Duron</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Duron.XML</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -60,12 +63,20 @@
     <Compile Include="RoundRobinDatabase\RRDElement.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Illias\Commons.NET4.5\Commons.NET4.5.csproj">
+      <Project>{ccc826d7-9ac7-4ce6-82f8-b835168eba35}</Project>
+      <Name>Commons.NET4.5</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Illias\Commons\Commons.csproj">
-      <Project>{16C85DF8-5DE6-4A9F-9FC7-7CA5B0440DF3}</Project>
-      <Name>Commons</Name>
+      <Project>{d3b1af79-161f-4299-8b14-133286d635b8}</Project>
+      <Name>Commons %28Dependencies\Commons\Commons%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Styx\Styx.NET4.5\Styx.NET4.5.csproj">
+      <Project>{af76ecc0-2ca5-4cff-9e1e-ff5478c4b6e4}</Project>
+      <Name>Styx.NET4.5</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Styx\Styx\Styx.csproj">
-      <Project>{3949790D-8591-4101-9E4D-CE7A758E7409}</Project>
+      <Project>{3949790d-8591-4101-9e4d-ce7a758e7409}</Project>
       <Name>Styx</Name>
     </ProjectReference>
   </ItemGroup>
