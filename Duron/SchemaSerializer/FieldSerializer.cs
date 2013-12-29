@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2010-2012 Achim 'ahzf' Friedland <achim@graphdefined.org>
+ * Copyright (c) 2010-2014 Achim 'ahzf' Friedland <achim@graphdefined.org>
  * This file is part of Duron <http://www.github.com/Vanaheimr/Duron>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
