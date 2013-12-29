@@ -379,6 +379,7 @@ namespace eu.Vanaheimr.Duron
                                       Graph.NumberOfMultiEdges(),
                                       Graph.NumberOfHyperEdges());
 
+                this._LastSavePointId++;
                 _StorageTimerEnabled = true;
 
             }
