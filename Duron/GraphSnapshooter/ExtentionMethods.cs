@@ -31,6 +31,7 @@ using eu.Vanaheimr.Illias.Commons;
 using eu.Vanaheimr.Illias.Commons.Collections;
 using eu.Vanaheimr.Balder;
 using eu.Vanaheimr.Styx;
+using eu.Vanaheimr.Walkyr;
 
 #endregion
 
@@ -86,15 +87,26 @@ namespace eu.Vanaheimr.Duron
                                                                  TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                                  TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
 
-                              String                                                 Prefix                  = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
-                                                                                                                                TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
-                                                                                                                                TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
-                                                                                                                                TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultPrefix,
+                              IGraphSerializer<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                               TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                               TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                               TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge,
+                                               String>                               GraphSerializer,
 
-                              String                                                 Suffix                  = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
-                                                                                                                                TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
-                                                                                                                                TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
-                                                                                                                                TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultSuffix,
+                              String                                                 Prefix                 = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                                                                               TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                                                                               TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                                                                               TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultPrefix,
+
+                              String                                                 Suffix                 = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                                                                               TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                                                                               TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                                                                               TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultSuffix,
+
+                              Boolean                                                SerializeVertices      = true,
+                              Boolean                                                SerializeEdges         = false,
+                              Boolean                                                SerializeMultiEdges    = false,
+                              Boolean                                                SerializeHyperEdges    = false,
 
                               Func<TIdVertex,    String>                             VertexIdSerializer     = null,
                               Func<TIdEdge,      String>                             EdgeIdSerializer       = null,
@@ -147,8 +159,14 @@ namespace eu.Vanaheimr.Duron
                                         TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
                                         TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                         TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>(Graph,
+                                                                                                                        GraphSerializer,
                                                                                                                         Prefix,
                                                                                                                         Suffix,
+
+                                                                                                                        SerializeVertices,
+                                                                                                                        SerializeEdges,
+                                                                                                                        SerializeMultiEdges,
+                                                                                                                        SerializeHyperEdges,
 
                                                                                                                         VertexIdSerializer,
                                                                                                                         EdgeIdSerializer,
@@ -211,6 +229,12 @@ namespace eu.Vanaheimr.Duron
                                                          TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                          TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
 
+                              IGraphSerializer<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                               TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                               TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                               TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge,
+                                               String>                               GraphSerializer,
+
                               String                                                 Prefix                 = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
                                                                                                                                TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
                                                                                                                                TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
@@ -220,6 +244,11 @@ namespace eu.Vanaheimr.Duron
                                                                                                                                TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
                                                                                                                                TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                                                                                                TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultSuffix,
+
+                              Boolean                                                SerializeVertices      = true,
+                              Boolean                                                SerializeEdges         = false,
+                              Boolean                                                SerializeMultiEdges    = false,
+                              Boolean                                                SerializeHyperEdges    = false,
 
                               Func<TIdVertex,    String>                             VertexIdSerializer     = null,
                               Func<TIdEdge,      String>                             EdgeIdSerializer       = null,
@@ -272,8 +301,14 @@ namespace eu.Vanaheimr.Duron
                                         TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
                                         TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                         TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>(Graph,
+                                                                                                                        GraphSerializer,
                                                                                                                         Prefix,
                                                                                                                         Suffix,
+
+                                                                                                                        SerializeVertices,
+                                                                                                                        SerializeEdges,
+                                                                                                                        SerializeMultiEdges,
+                                                                                                                        SerializeHyperEdges,
 
                                                                                                                         VertexIdSerializer,
                                                                                                                         EdgeIdSerializer,

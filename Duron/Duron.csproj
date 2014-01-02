@@ -94,6 +94,10 @@
       <Project>{3949790d-8591-4101-9e4d-ce7a758e7409}</Project>
       <Name>Styx</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Walkyr\Walkyr\Walkyr.csproj">
+      <Project>{a3507c2e-1a82-4342-bd42-f544275d6959}</Project>
+      <Name>Walkyr</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
