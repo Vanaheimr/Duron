@@ -37,124 +37,267 @@ using eu.Vanaheimr.Styx;
 namespace eu.Vanaheimr.Duron
 {
 
-    public static class Ext
+    /// <summary>
+    /// Extention methods.
+    /// </summary>
+    public static class ExtentionMethods
     {
 
         #region AttachSnapshooter(Graph, ...)
 
         /// <summary>
-        /// 
+        /// Attach a graph snap shooter to the given graph.
         /// </summary>
-        /// <typeparam name="TVertexLabel">The type of the vertex label.</typeparam>
+        /// <typeparam name="TIdVertex">The type of the vertex identifiers.</typeparam>
+        /// <typeparam name="TRevIdVertex">The type of the vertex revision identifiers.</typeparam>
+        /// <typeparam name="TVertexLabel">The type of the vertex type.</typeparam>
+        /// <typeparam name="TKeyVertex">The type of the vertex property keys.</typeparam>
+        /// <typeparam name="TValueVertex">The type of the vertex property values.</typeparam>
+        /// 
+        /// <typeparam name="TIdEdge">The type of the edge identifiers.</typeparam>
+        /// <typeparam name="TRevIdEdge">The type of the edge revision identifiers.</typeparam>
         /// <typeparam name="TEdgeLabel">The type of the edge label.</typeparam>
+        /// <typeparam name="TKeyEdge">The type of the edge property keys.</typeparam>
+        /// <typeparam name="TValueEdge">The type of the edge property values.</typeparam>
+        /// 
+        /// <typeparam name="TIdMultiEdge">The type of the multiedge identifiers.</typeparam>
+        /// <typeparam name="TRevIdMultiEdge">The type of the multiedge revision identifiers.</typeparam>
         /// <typeparam name="TMultiEdgeLabel">The type of the multiedge label.</typeparam>
+        /// <typeparam name="TKeyMultiEdge">The type of the multiedge property keys.</typeparam>
+        /// <typeparam name="TValueMultiEdge">The type of the multiedge property values.</typeparam>
+        /// 
+        /// <typeparam name="TIdHyperEdge">The type of the hyperedge identifiers.</typeparam>
+        /// <typeparam name="TRevIdHyperEdge">The type of the hyperedge revision identifiers.</typeparam>
         /// <typeparam name="THyperEdgeLabel">The type of the hyperedge label.</typeparam>
-        public static GraphSnapshooter<TVertexLabel, TEdgeLabel, TMultiEdgeLabel, THyperEdgeLabel>
+        /// <typeparam name="TKeyHyperEdge">The type of the hyperedge property keys.</typeparam>
+        /// <typeparam name="TValueHyperEdge">The type of the hyperedge property values.</typeparam>
+        public static GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                       TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                       TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                       TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>
 
-                          AttachSnapshooter<TVertexLabel, TEdgeLabel, TMultiEdgeLabel, THyperEdgeLabel>(
+                          AttachSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                            TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                            TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                            TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>(
 
-                              this IGenericPropertyGraph<String, Int64, TVertexLabel,    String, Object,
-                                                         String, Int64, TEdgeLabel,      String, Object,
-                                                         String, Int64, TMultiEdgeLabel, String, Object,
-                                                         String, Int64, THyperEdgeLabel, String, Object> Graph,
-                              String                                                 Prefix,
-                              String                                                 Suffix,
-                              VertexLabelParserDelegate   <String, TVertexLabel>     VertexLabelParser,
-                              EdgeLabelParserDelegate     <String, TEdgeLabel>       EdgeLabelParser,
-                              MultiEdgeLabelParserDelegate<String, TMultiEdgeLabel>  MultiEdgeLabelParser,
-                              HyperEdgeLabelParserDelegate<String, THyperEdgeLabel>  HyperEdgeLabelParser,
-                              UInt32                                                 NumberOfBackupFiles  = 10,
-                              UInt64                                                 SaveEveryMSec        = 5000,
-                              String                                                 WorkingDirectory     = null)
+                              this IReadOnlyGenericPropertyGraph<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                 TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                 TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                 TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
+
+                              String                                                 Prefix                  = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                                                                                TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                                                                                TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                                                                                TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultPrefix,
+
+                              String                                                 Suffix                  = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                                                                                TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                                                                                TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                                                                                TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultSuffix,
+
+                              Func<TIdVertex,    String>                             VertexIdSerializer     = null,
+                              Func<TIdEdge,      String>                             EdgeIdSerializer       = null,
+                              Func<TIdMultiEdge, String>                             MultiEdgeIdSerializer  = null,
+                              Func<TIdHyperEdge, String>                             HyperEdgeIdSerializer  = null,
+
+                              Func<TKeyVertex,   String>                             TKeyVertexSerializer   = null,
+                              Func<TValueVertex, String>                             TValueVertexSerializer = null,
+                              Func<TKeyEdge,     String>                             TKeyEdgeSerializer     = null,
+                              Func<TValueEdge,   String>                             TValueEdgeSerializer   = null,
+
+                              VertexLabelParserDelegate   <String, TVertexLabel>     VertexLabelParser      = null,
+                              EdgeLabelParserDelegate     <String, TEdgeLabel>       EdgeLabelParser        = null,
+                              MultiEdgeLabelParserDelegate<String, TMultiEdgeLabel>  MultiEdgeLabelParser   = null,
+                              HyperEdgeLabelParserDelegate<String, THyperEdgeLabel>  HyperEdgeLabelParser   = null,
+
+                              Func<String, TKeyVertex>                               TKeyVertexParser       = null,
+                              Func<String, TValueVertex>                             TValueVertexParser     = null,
+                              Func<String, TKeyEdge>                                 TKeyEdgeParser         = null,
+                              Func<String, TValueEdge>                               TValueEdgeParser       = null,
+
+                              UInt32                                                 NumberOfBackupFiles    = 10,
+                              UInt64                                                 SaveEveryMSec          = 5000,
+                              String                                                 WorkingDirectory       = null)
 
 
-            where TVertexLabel     : IEquatable<TVertexLabel>,    IComparable<TVertexLabel>,    IComparable
-            where TEdgeLabel       : IEquatable<TEdgeLabel>,      IComparable<TEdgeLabel>,      IComparable
-            where TMultiEdgeLabel  : IEquatable<TMultiEdgeLabel>, IComparable<TMultiEdgeLabel>, IComparable
-            where THyperEdgeLabel  : IEquatable<THyperEdgeLabel>, IComparable<THyperEdgeLabel>, IComparable
+            where TIdVertex        : IEquatable<TIdVertex>,       IComparable<TIdVertex>,       IComparable, TValueVertex
+            where TIdEdge          : IEquatable<TIdEdge>,         IComparable<TIdEdge>,         IComparable, TValueEdge
+            where TIdMultiEdge     : IEquatable<TIdMultiEdge>,    IComparable<TIdMultiEdge>,    IComparable, TValueMultiEdge
+            where TIdHyperEdge     : IEquatable<TIdHyperEdge>,    IComparable<TIdHyperEdge>,    IComparable, TValueHyperEdge
+
+            where TRevIdVertex     : IEquatable<TRevIdVertex>,    IComparable<TRevIdVertex>,    IComparable, TValueVertex
+            where TRevIdEdge       : IEquatable<TRevIdEdge>,      IComparable<TRevIdEdge>,      IComparable, TValueEdge
+            where TRevIdMultiEdge  : IEquatable<TRevIdMultiEdge>, IComparable<TRevIdMultiEdge>, IComparable, TValueMultiEdge
+            where TRevIdHyperEdge  : IEquatable<TRevIdHyperEdge>, IComparable<TRevIdHyperEdge>, IComparable, TValueHyperEdge
+
+            where TVertexLabel     : IEquatable<TVertexLabel>,    IComparable<TVertexLabel>,    IComparable, TValueVertex
+            where TEdgeLabel       : IEquatable<TEdgeLabel>,      IComparable<TEdgeLabel>,      IComparable, TValueEdge
+            where TMultiEdgeLabel  : IEquatable<TMultiEdgeLabel>, IComparable<TMultiEdgeLabel>, IComparable, TValueMultiEdge
+            where THyperEdgeLabel  : IEquatable<THyperEdgeLabel>, IComparable<THyperEdgeLabel>, IComparable, TValueHyperEdge
+
+            where TKeyVertex       : IEquatable<TKeyVertex>,      IComparable<TKeyVertex>,      IComparable
+            where TKeyEdge         : IEquatable<TKeyEdge>,        IComparable<TKeyEdge>,        IComparable
+            where TKeyMultiEdge    : IEquatable<TKeyMultiEdge>,   IComparable<TKeyMultiEdge>,   IComparable
+            where TKeyHyperEdge    : IEquatable<TKeyHyperEdge>,   IComparable<TKeyHyperEdge>,   IComparable
 
         {
 
-            return new GraphSnapshooter<TVertexLabel,
-                                        TEdgeLabel,
-                                        TMultiEdgeLabel,
-                                        THyperEdgeLabel>(Graph,
-                                                         Prefix,
-                                                         Suffix,
-                                                         VertexLabelParser,
-                                                         EdgeLabelParser,
-                                                         MultiEdgeLabelParser,
-                                                         HyperEdgeLabelParser,
-                                                         NumberOfBackupFiles,
-                                                         SaveEveryMSec,
-                                                         WorkingDirectory);
+            return new GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                        TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                        TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                        TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>(Graph,
+                                                                                                                        Prefix,
+                                                                                                                        Suffix,
+
+                                                                                                                        VertexIdSerializer,
+                                                                                                                        EdgeIdSerializer,
+                                                                                                                        MultiEdgeIdSerializer,
+                                                                                                                        HyperEdgeIdSerializer,
+
+                                                                                                                        TKeyVertexSerializer,
+                                                                                                                        TValueVertexSerializer,
+                                                                                                                        TKeyEdgeSerializer,
+                                                                                                                        TValueEdgeSerializer,
+
+                                                                                                                        NumberOfBackupFiles,
+                                                                                                                        SaveEveryMSec,
+                                                                                                                        WorkingDirectory);
 
         }
 
         #endregion
 
-        #region SerializeProperties(Properties)
-
-        public static String SerializeProperties(this IReadOnlyProperties<String, Object> Properties)
-        {
-
-            var VertexPropertyList  = new List<String>();
-            var VertexPropertyValue = "";
-
-            foreach (var p in Properties)
-            {
-
-                var _JSONString = p.Value as JSONString;
-
-                if (_JSONString != null)
-                    VertexPropertyValue = _JSONString.JSONString;
-                else
-                    VertexPropertyValue = @"""" + HttpUtility.UrlEncode(p.Value.ToString()) + @"""";
-
-                VertexPropertyList.Add(String.Concat(@"""", p.Key, @""": ", VertexPropertyValue));
-
-            }
-
-            return VertexPropertyList.CSVAggregate(@"""Properties"": { ", " }");
-
-        }
-
-        #endregion
-
-        #region SerializeVertex(Vertex)
+        #region AttachSnapshooter(Graph, ...)
 
         /// <summary>
-        /// 
+        /// Attach a graph snap shooter to the given graph.
         /// </summary>
-        /// <typeparam name="TVertexLabel">The type of the vertex label.</typeparam>
+        /// <typeparam name="TIdVertex">The type of the vertex identifiers.</typeparam>
+        /// <typeparam name="TRevIdVertex">The type of the vertex revision identifiers.</typeparam>
+        /// <typeparam name="TVertexLabel">The type of the vertex type.</typeparam>
+        /// <typeparam name="TKeyVertex">The type of the vertex property keys.</typeparam>
+        /// <typeparam name="TValueVertex">The type of the vertex property values.</typeparam>
+        /// 
+        /// <typeparam name="TIdEdge">The type of the edge identifiers.</typeparam>
+        /// <typeparam name="TRevIdEdge">The type of the edge revision identifiers.</typeparam>
         /// <typeparam name="TEdgeLabel">The type of the edge label.</typeparam>
+        /// <typeparam name="TKeyEdge">The type of the edge property keys.</typeparam>
+        /// <typeparam name="TValueEdge">The type of the edge property values.</typeparam>
+        /// 
+        /// <typeparam name="TIdMultiEdge">The type of the multiedge identifiers.</typeparam>
+        /// <typeparam name="TRevIdMultiEdge">The type of the multiedge revision identifiers.</typeparam>
         /// <typeparam name="TMultiEdgeLabel">The type of the multiedge label.</typeparam>
+        /// <typeparam name="TKeyMultiEdge">The type of the multiedge property keys.</typeparam>
+        /// <typeparam name="TValueMultiEdge">The type of the multiedge property values.</typeparam>
+        /// 
+        /// <typeparam name="TIdHyperEdge">The type of the hyperedge identifiers.</typeparam>
+        /// <typeparam name="TRevIdHyperEdge">The type of the hyperedge revision identifiers.</typeparam>
         /// <typeparam name="THyperEdgeLabel">The type of the hyperedge label.</typeparam>
-        /// <param name="Vertex"></param>
-        /// <returns></returns>
-        public static String SerializeVertex<TVertexLabel, TEdgeLabel, TMultiEdgeLabel, THyperEdgeLabel>(
-                                 this IReadOnlyGenericPropertyVertex<String, Int64, TVertexLabel, String, Object,
-                                                                     String, Int64, TEdgeLabel,      String, Object,
-                                                                     String, Int64, TMultiEdgeLabel, String, Object,
-                                                                     String, Int64, THyperEdgeLabel, String, Object> Vertex)
+        /// <typeparam name="TKeyHyperEdge">The type of the hyperedge property keys.</typeparam>
+        /// <typeparam name="TValueHyperEdge">The type of the hyperedge property values.</typeparam>
+        public static GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                       TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                       TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                       TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>
 
-            where TVertexLabel     : IEquatable<TVertexLabel>,    IComparable<TVertexLabel>,    IComparable
-            where TEdgeLabel       : IEquatable<TEdgeLabel>,      IComparable<TEdgeLabel>,      IComparable
-            where TMultiEdgeLabel  : IEquatable<TMultiEdgeLabel>, IComparable<TMultiEdgeLabel>, IComparable
-            where THyperEdgeLabel  : IEquatable<THyperEdgeLabel>, IComparable<THyperEdgeLabel>, IComparable
+                          AttachSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                            TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                            TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                            TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>(
+
+                              this IGenericPropertyGraph<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                         TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                         TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                         TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
+
+                              String                                                 Prefix                 = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                                                                               TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                                                                               TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                                                                               TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultPrefix,
+
+                              String                                                 Suffix                 = GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                                                                               TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                                                                               TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                                                                               TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>.DefaultSuffix,
+
+                              Func<TIdVertex,    String>                             VertexIdSerializer     = null,
+                              Func<TIdEdge,      String>                             EdgeIdSerializer       = null,
+                              Func<TIdMultiEdge, String>                             MultiEdgeIdSerializer  = null,
+                              Func<TIdHyperEdge, String>                             HyperEdgeIdSerializer  = null,
+
+                              Func<TKeyVertex,   String>                             TKeyVertexSerializer   = null,
+                              Func<TValueVertex, String>                             TValueVertexSerializer = null,
+                              Func<TKeyEdge,     String>                             TKeyEdgeSerializer     = null,
+                              Func<TValueEdge,   String>                             TValueEdgeSerializer   = null,
+
+                              VertexLabelParserDelegate   <String, TVertexLabel>     VertexLabelParser      = null,
+                              EdgeLabelParserDelegate     <String, TEdgeLabel>       EdgeLabelParser        = null,
+                              MultiEdgeLabelParserDelegate<String, TMultiEdgeLabel>  MultiEdgeLabelParser   = null,
+                              HyperEdgeLabelParserDelegate<String, THyperEdgeLabel>  HyperEdgeLabelParser   = null,
+
+                              Func<String, TKeyVertex>                               TKeyVertexParser       = null,
+                              Func<String, TValueVertex>                             TValueVertexParser     = null,
+                              Func<String, TKeyEdge>                                 TKeyEdgeParser         = null,
+                              Func<String, TValueEdge>                               TValueEdgeParser       = null,
+
+                              UInt32                                                 NumberOfBackupFiles    = 10,
+                              UInt64                                                 SaveEveryMSec          = 5000,
+                              String                                                 WorkingDirectory       = null)
+
+
+            where TIdVertex        : IEquatable<TIdVertex>,       IComparable<TIdVertex>,       IComparable, TValueVertex
+            where TIdEdge          : IEquatable<TIdEdge>,         IComparable<TIdEdge>,         IComparable, TValueEdge
+            where TIdMultiEdge     : IEquatable<TIdMultiEdge>,    IComparable<TIdMultiEdge>,    IComparable, TValueMultiEdge
+            where TIdHyperEdge     : IEquatable<TIdHyperEdge>,    IComparable<TIdHyperEdge>,    IComparable, TValueHyperEdge
+
+            where TRevIdVertex     : IEquatable<TRevIdVertex>,    IComparable<TRevIdVertex>,    IComparable, TValueVertex
+            where TRevIdEdge       : IEquatable<TRevIdEdge>,      IComparable<TRevIdEdge>,      IComparable, TValueEdge
+            where TRevIdMultiEdge  : IEquatable<TRevIdMultiEdge>, IComparable<TRevIdMultiEdge>, IComparable, TValueMultiEdge
+            where TRevIdHyperEdge  : IEquatable<TRevIdHyperEdge>, IComparable<TRevIdHyperEdge>, IComparable, TValueHyperEdge
+
+            where TVertexLabel     : IEquatable<TVertexLabel>,    IComparable<TVertexLabel>,    IComparable, TValueVertex
+            where TEdgeLabel       : IEquatable<TEdgeLabel>,      IComparable<TEdgeLabel>,      IComparable, TValueEdge
+            where TMultiEdgeLabel  : IEquatable<TMultiEdgeLabel>, IComparable<TMultiEdgeLabel>, IComparable, TValueMultiEdge
+            where THyperEdgeLabel  : IEquatable<THyperEdgeLabel>, IComparable<THyperEdgeLabel>, IComparable, TValueHyperEdge
+
+            where TKeyVertex       : IEquatable<TKeyVertex>,      IComparable<TKeyVertex>,      IComparable
+            where TKeyEdge         : IEquatable<TKeyEdge>,        IComparable<TKeyEdge>,        IComparable
+            where TKeyMultiEdge    : IEquatable<TKeyMultiEdge>,   IComparable<TKeyMultiEdge>,   IComparable
+            where TKeyHyperEdge    : IEquatable<TKeyHyperEdge>,   IComparable<TKeyHyperEdge>,   IComparable
 
         {
 
-            var Result   = new StringBuilder(@"{ ""AddVertex"": { ").Append(Vertex.SerializeProperties());
-            var EdgeList = new List<String>();
+            return new GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                        TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                        TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                        TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>(Graph,
+                                                                                                                        Prefix,
+                                                                                                                        Suffix,
 
-            Vertex.OutEdges().
-                   ForEach(e => EdgeList.Add(String.Concat(@"{ ""InVertex"": """, HttpUtility.UrlEncode(e.InVertex.Id.ToString()), @""", ", e.SerializeProperties(), " }")));
+                                                                                                                        VertexIdSerializer,
+                                                                                                                        EdgeIdSerializer,
+                                                                                                                        MultiEdgeIdSerializer,
+                                                                                                                        HyperEdgeIdSerializer,
 
-            if (EdgeList.Any())
-                Result.AppendCSV(@", ""OutEdges"": [ ", EdgeList, " ]");
+                                                                                                                        TKeyVertexSerializer,
+                                                                                                                        TValueVertexSerializer,
+                                                                                                                        TKeyEdgeSerializer,
+                                                                                                                        TValueEdgeSerializer,
 
-            return Result.Append("} }").ToString();
+                                                                                                                        VertexLabelParser,
+                                                                                                                        EdgeLabelParser,
+                                                                                                                        MultiEdgeLabelParser,
+                                                                                                                        HyperEdgeLabelParser,
+
+                                                                                                                        TKeyVertexParser,
+                                                                                                                        TValueVertexParser,
+                                                                                                                        TKeyEdgeParser,
+                                                                                                                        TValueEdgeParser,
+
+                                                                                                                        NumberOfBackupFiles,
+                                                                                                                        SaveEveryMSec,
+                                                                                                                        WorkingDirectory);
 
         }
 

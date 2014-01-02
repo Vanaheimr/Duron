@@ -40,35 +40,91 @@ namespace eu.Vanaheimr.Duron
     /// <summary>
     /// Handels graph snap shots.
     /// </summary>
-    /// <typeparam name="TVertexLabel">The type of the vertex label.</typeparam>
+    /// <typeparam name="TIdVertex">The type of the vertex identifiers.</typeparam>
+    /// <typeparam name="TRevIdVertex">The type of the vertex revision identifiers.</typeparam>
+    /// <typeparam name="TVertexLabel">The type of the vertex type.</typeparam>
+    /// <typeparam name="TKeyVertex">The type of the vertex property keys.</typeparam>
+    /// <typeparam name="TValueVertex">The type of the vertex property values.</typeparam>
+    /// 
+    /// <typeparam name="TIdEdge">The type of the edge identifiers.</typeparam>
+    /// <typeparam name="TRevIdEdge">The type of the edge revision identifiers.</typeparam>
     /// <typeparam name="TEdgeLabel">The type of the edge label.</typeparam>
+    /// <typeparam name="TKeyEdge">The type of the edge property keys.</typeparam>
+    /// <typeparam name="TValueEdge">The type of the edge property values.</typeparam>
+    /// 
+    /// <typeparam name="TIdMultiEdge">The type of the multiedge identifiers.</typeparam>
+    /// <typeparam name="TRevIdMultiEdge">The type of the multiedge revision identifiers.</typeparam>
     /// <typeparam name="TMultiEdgeLabel">The type of the multiedge label.</typeparam>
+    /// <typeparam name="TKeyMultiEdge">The type of the multiedge property keys.</typeparam>
+    /// <typeparam name="TValueMultiEdge">The type of the multiedge property values.</typeparam>
+    /// 
+    /// <typeparam name="TIdHyperEdge">The type of the hyperedge identifiers.</typeparam>
+    /// <typeparam name="TRevIdHyperEdge">The type of the hyperedge revision identifiers.</typeparam>
     /// <typeparam name="THyperEdgeLabel">The type of the hyperedge label.</typeparam>
-    public class GraphSnapshooter<TVertexLabel, TEdgeLabel, TMultiEdgeLabel, THyperEdgeLabel>
+    /// <typeparam name="TKeyHyperEdge">The type of the hyperedge property keys.</typeparam>
+    /// <typeparam name="TValueHyperEdge">The type of the hyperedge property values.</typeparam>
+    public class GraphSnapshooter<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                  TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                  TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                  TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge>
 
-        where TVertexLabel     : IEquatable<TVertexLabel>,    IComparable<TVertexLabel>,    IComparable
-        where TEdgeLabel       : IEquatable<TEdgeLabel>,      IComparable<TEdgeLabel>,      IComparable
-        where TMultiEdgeLabel  : IEquatable<TMultiEdgeLabel>, IComparable<TMultiEdgeLabel>, IComparable
-        where THyperEdgeLabel  : IEquatable<THyperEdgeLabel>, IComparable<THyperEdgeLabel>, IComparable
+        where TIdVertex        : IEquatable<TIdVertex>,       IComparable<TIdVertex>,       IComparable, TValueVertex
+        where TIdEdge          : IEquatable<TIdEdge>,         IComparable<TIdEdge>,         IComparable, TValueEdge
+        where TIdMultiEdge     : IEquatable<TIdMultiEdge>,    IComparable<TIdMultiEdge>,    IComparable, TValueMultiEdge
+        where TIdHyperEdge     : IEquatable<TIdHyperEdge>,    IComparable<TIdHyperEdge>,    IComparable, TValueHyperEdge
+
+        where TRevIdVertex     : IEquatable<TRevIdVertex>,    IComparable<TRevIdVertex>,    IComparable, TValueVertex
+        where TRevIdEdge       : IEquatable<TRevIdEdge>,      IComparable<TRevIdEdge>,      IComparable, TValueEdge
+        where TRevIdMultiEdge  : IEquatable<TRevIdMultiEdge>, IComparable<TRevIdMultiEdge>, IComparable, TValueMultiEdge
+        where TRevIdHyperEdge  : IEquatable<TRevIdHyperEdge>, IComparable<TRevIdHyperEdge>, IComparable, TValueHyperEdge
+
+        where TVertexLabel     : IEquatable<TVertexLabel>,    IComparable<TVertexLabel>,    IComparable, TValueVertex
+        where TEdgeLabel       : IEquatable<TEdgeLabel>,      IComparable<TEdgeLabel>,      IComparable, TValueEdge
+        where TMultiEdgeLabel  : IEquatable<TMultiEdgeLabel>, IComparable<TMultiEdgeLabel>, IComparable, TValueMultiEdge
+        where THyperEdgeLabel  : IEquatable<THyperEdgeLabel>, IComparable<THyperEdgeLabel>, IComparable, TValueHyperEdge
+
+        where TKeyVertex       : IEquatable<TKeyVertex>,      IComparable<TKeyVertex>,      IComparable
+        where TKeyEdge         : IEquatable<TKeyEdge>,        IComparable<TKeyEdge>,        IComparable
+        where TKeyMultiEdge    : IEquatable<TKeyMultiEdge>,   IComparable<TKeyMultiEdge>,   IComparable
+        where TKeyHyperEdge    : IEquatable<TKeyHyperEdge>,   IComparable<TKeyHyperEdge>,   IComparable
 
     {
 
         #region Data
 
+        public  const    String                                                 DefaultPrefix = "graphbackup";
+        public  const    String                                                 DefaultSuffix = "graph";
+
         private readonly Timer                                                  SerializationTimer;
+
+        private readonly Func<TIdVertex,    String>                             VertexIdSerializer;
+        private readonly Func<TIdEdge,      String>                             EdgeIdSerializer;
+        private readonly Func<TIdMultiEdge, String>                             MultiEdgeIdSerializer;
+        private readonly Func<TIdHyperEdge, String>                             HyperEdgeIdSerializer;
+
+        private readonly Func<TKeyVertex,   String>                             TKeyVertexSerializer;
+        private readonly Func<TValueVertex, String>                             TValueVertexSerializer;
+        private readonly Func<TKeyEdge,     String>                             TKeyEdgeSerializer;
+        private readonly Func<TValueEdge,   String>                             TValueEdgeSerializer;
+
         private readonly VertexLabelParserDelegate   <String, TVertexLabel>     VertexLabelParser;
         private readonly EdgeLabelParserDelegate     <String, TEdgeLabel>       EdgeLabelParser;
         private readonly MultiEdgeLabelParserDelegate<String, TMultiEdgeLabel>  MultiEdgeLabelParser;
         private readonly HyperEdgeLabelParserDelegate<String, THyperEdgeLabel>  HyperEdgeLabelParser;
 
+        private readonly Func<String, TKeyVertex>   TKeyVertexParser;
+        private readonly Func<String, TValueVertex> TValueVertexParser;
+        private readonly Func<String, TKeyEdge>     TKeyEdgeParser;
+        private readonly Func<String, TValueEdge>   TValueEdgeParser;
+
         #endregion
 
         #region Properties
 
-        public IGenericPropertyGraph<String, Int64, TVertexLabel,    String, Object,
-                                     String, Int64, TEdgeLabel,      String, Object,
-                                     String, Int64, TMultiEdgeLabel, String, Object,
-                                     String, Int64, THyperEdgeLabel, String, Object> Graph { get; private set; }
+        public IGenericPropertyGraph<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                     TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                     TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                     TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph { get; private set; }
 
         public String Prefix { get; private set; }
 
@@ -144,42 +200,139 @@ namespace eu.Vanaheimr.Duron
 
         #region Constructor(s)
 
-        public GraphSnapshooter(IGenericPropertyGraph<String, Int64, TVertexLabel,    String, Object,
-                                                 String, Int64, TEdgeLabel,      String, Object,
-                                                 String, Int64, TMultiEdgeLabel, String, Object,
-                                                 String, Int64, THyperEdgeLabel, String, Object> Graph,
-                           String                                                 Prefix,
-                           String                                                 Suffix,
-                           VertexLabelParserDelegate   <String, TVertexLabel>     VertexLabelParser,
-                           EdgeLabelParserDelegate     <String, TEdgeLabel>       EdgeLabelParser,
-                           MultiEdgeLabelParserDelegate<String, TMultiEdgeLabel>  MultiEdgeLabelParser,
-                           HyperEdgeLabelParserDelegate<String, THyperEdgeLabel>  HyperEdgeLabelParser,
-                           UInt32                                                 NumberOfBackupFiles  = 10,
-                           UInt64                                                 SaveEveryMSec        = 5000,
-                           String                                                 WorkingDirectory     = null)
+        #region Read-only graph...
+
+        public GraphSnapshooter(IReadOnlyGenericPropertyGraph<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                              TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                              TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                              TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
+
+                                String                                                  Prefix                  = DefaultPrefix,
+                                String                                                  Suffix                  = DefaultSuffix,
+
+                                Func<TIdVertex,    String>                              VertexIdSerializer      = null,
+                                Func<TIdEdge,      String>                              EdgeIdSerializer        = null,
+                                Func<TIdMultiEdge, String>                              MultiEdgeIdSerializer   = null,
+                                Func<TIdHyperEdge, String>                              HyperEdgeIdSerializer   = null,
+
+                                Func<TKeyVertex,   String>                              TKeyVertexSerializer    = null,
+                                Func<TValueVertex, String>                              TValueVertexSerializer  = null,
+                                Func<TKeyEdge,     String>                              TKeyEdgeSerializer      = null,
+                                Func<TValueEdge,   String>                              TValueEdgeSerializer    = null,
+
+                                UInt32                                                  NumberOfBackupFiles     = 10,
+                                UInt64                                                  SaveEveryMSec           = 5000,
+                                String                                                  WorkingDirectory        = null)
+
+            : this(Graph.AsMutable(),
+                   Prefix,
+                   Suffix,
+
+                   VertexIdSerializer,
+                   EdgeIdSerializer,
+                   MultiEdgeIdSerializer,
+                   HyperEdgeIdSerializer,
+
+                   TKeyVertexSerializer,
+                   TValueVertexSerializer,
+                   TKeyEdgeSerializer,
+                   TValueEdgeSerializer,
+
+                   null,
+                   null,
+                   null,
+                   null,
+
+                   null,
+                   null,
+                   null,
+                   null,
+
+                   NumberOfBackupFiles,
+                   SaveEveryMSec,
+                   WorkingDirectory,
+                   false)
+
+        { }
+
+        #endregion
+
+        #region R/W
+
+        public GraphSnapshooter(IGenericPropertyGraph<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                      TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                      TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                      TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
+
+                                String                                                  Prefix                  = DefaultPrefix,
+                                String                                                  Suffix                  = DefaultSuffix,
+
+                                Func<TIdVertex,    String>                              VertexIdSerializer      = null,
+                                Func<TIdEdge,      String>                              EdgeIdSerializer        = null,
+                                Func<TIdMultiEdge, String>                              MultiEdgeIdSerializer   = null,
+                                Func<TIdHyperEdge, String>                              HyperEdgeIdSerializer   = null,
+
+                                Func<TKeyVertex,   String>                              TKeyVertexSerializer    = null,
+                                Func<TValueVertex, String>                              TValueVertexSerializer  = null,
+                                Func<TKeyEdge,     String>                              TKeyEdgeSerializer      = null,
+                                Func<TValueEdge,   String>                              TValueEdgeSerializer    = null,
+
+                                VertexLabelParserDelegate   <String, TVertexLabel>      VertexLabelParser       = null,
+                                EdgeLabelParserDelegate     <String, TEdgeLabel>        EdgeLabelParser         = null,
+                                MultiEdgeLabelParserDelegate<String, TMultiEdgeLabel>   MultiEdgeLabelParser    = null,
+                                HyperEdgeLabelParserDelegate<String, THyperEdgeLabel>   HyperEdgeLabelParser    = null,
+
+                                Func<String, TKeyVertex>                                TKeyVertexParser        = null,
+                                Func<String, TValueVertex>                              TValueVertexParser      = null,
+                                Func<String, TKeyEdge>                                  TKeyEdgeParser          = null,
+                                Func<String, TValueEdge>                                TValueEdgeParser        = null,
+
+                                UInt32                                                  NumberOfBackupFiles     = 10,
+                                UInt64                                                  SaveEveryMSec           = 5000,
+                                String                                                  WorkingDirectory        = null,
+                                Boolean                                                 TryToLoadPreviousBackup = true)
 
         {
 
-            this.Graph                  = Graph;
-            this.Prefix                 = Prefix;
-            this.Suffix                 = Suffix;
-            this.VertexLabelParser      = VertexLabelParser;
-            this.EdgeLabelParser        = EdgeLabelParser;
-            this.MultiEdgeLabelParser   = MultiEdgeLabelParser;
-            this.HyperEdgeLabelParser   = HyperEdgeLabelParser;
-            this._NumberOfBackupFiles   = NumberOfBackupFiles;
-            this.SaveEveryMSec          = SaveEveryMSec;
-            this.WorkingDirectory       = (WorkingDirectory != null)
-                                              ? WorkingDirectory
-                                              : Directory.GetCurrentDirectory();
+            this.Graph                      = Graph;
+            this.Prefix                     = Prefix;
+            this.Suffix                     = Suffix;
+
+            this.VertexIdSerializer         = (VertexIdSerializer     != null) ? VertexIdSerializer     : VertexId    => (typeof(TIdVertex)    == typeof(UInt64)) ? VertexId.ToString()    : "\"" + HttpUtility.UrlEncode(VertexId.   ToString()) + "\"";
+            this.EdgeIdSerializer           = (EdgeIdSerializer       != null) ? EdgeIdSerializer       : EdgeId      => (typeof(TIdEdge)      == typeof(UInt64)) ? EdgeId.ToString()      : "\"" + HttpUtility.UrlEncode(EdgeId.     ToString()) + "\"";
+            this.MultiEdgeIdSerializer      = (MultiEdgeIdSerializer  != null) ? MultiEdgeIdSerializer  : MultiEdgeId => (typeof(TIdMultiEdge) == typeof(UInt64)) ? MultiEdgeId.ToString() : "\"" + HttpUtility.UrlEncode(MultiEdgeId.ToString()) + "\"";
+            this.HyperEdgeIdSerializer      = (HyperEdgeIdSerializer  != null) ? HyperEdgeIdSerializer  : HyperEdgeId => (typeof(TIdHyperEdge) == typeof(UInt64)) ? HyperEdgeId.ToString() : "\"" + HttpUtility.UrlEncode(HyperEdgeId.ToString()) + "\"";
+
+            this.TKeyVertexSerializer       = (TKeyVertexSerializer   != null) ? TKeyVertexSerializer   : VertexKey   =>                                                                         "\"" + HttpUtility.UrlEncode(VertexKey.ToString())   + "\"";
+            this.TValueVertexSerializer     = (TValueVertexSerializer != null) ? TValueVertexSerializer : VertexValue => (VertexValue.GetType() == typeof(UInt64)) ? VertexValue.ToString()    : "\"" + HttpUtility.UrlEncode(VertexValue.ToString()) + "\"";
+            this.TKeyEdgeSerializer         = (TKeyEdgeSerializer     != null) ? TKeyEdgeSerializer     : EdgeKey     =>                                                                         "\"" + HttpUtility.UrlEncode(EdgeKey.ToString())     + "\"";
+            this.TValueEdgeSerializer       = (TValueEdgeSerializer   != null) ? TValueEdgeSerializer   : EdgeValue   => (EdgeValue.GetType()   == typeof(UInt64)) ? EdgeValue.  ToString()    : "\"" + HttpUtility.UrlEncode(EdgeValue.ToString())   + "\"";
+
+            this.VertexLabelParser          = VertexLabelParser;
+            this.EdgeLabelParser            = EdgeLabelParser;
+            this.MultiEdgeLabelParser       = MultiEdgeLabelParser;
+            this.HyperEdgeLabelParser       = HyperEdgeLabelParser;
+
+            this.TKeyVertexParser           = (TKeyVertexParser       != null) ? TKeyVertexParser       : VertexKey   => (TKeyVertex)   (Object) HttpUtility.UrlDecode(VertexKey);
+            this.TValueVertexParser         = (TValueVertexParser     != null) ? TValueVertexParser     : VertexValue => (TValueVertex) (Object) HttpUtility.UrlDecode(VertexValue);
+            this.TKeyEdgeParser             = (TKeyEdgeParser         != null) ? TKeyEdgeParser         : EdgeKey     => (TKeyEdge)     (Object) HttpUtility.UrlDecode(EdgeKey);
+            this.TValueEdgeParser           = (TValueEdgeParser       != null) ? TValueEdgeParser       : EdgeValue   => (TValueEdge)   (Object) HttpUtility.UrlDecode(EdgeValue);
+
+            this._NumberOfBackupFiles       = NumberOfBackupFiles;
+            this.SaveEveryMSec              = SaveEveryMSec;
+            this.WorkingDirectory           = (WorkingDirectory != null)
+                                                  ? WorkingDirectory
+                                                  : Directory.GetCurrentDirectory();
 
             if (!Directory.Exists(this.WorkingDirectory))
                 throw new ArgumentException("The directory '" + this.WorkingDirectory + "' seems to be invalid!");
 
-            this._StorageTimerEnabled   = false;
-            this.SerializationTimer     = new Timer(_ => Store((Boolean) _), _StorageTimerEnabled, 0, (Int64) SaveEveryMSec); 
+            this._StorageTimerEnabled       = false;
+            this.SerializationTimer         = new Timer(_ => Store((Boolean) _), _StorageTimerEnabled, 0, (Int64) SaveEveryMSec); 
 
         }
+
+        #endregion
 
         #endregion
 
@@ -199,7 +352,7 @@ namespace eu.Vanaheimr.Duron
                     using (var OutFile = new StreamWriter(Prefix + LastSavePointId + "." + Suffix))
                     {
                         Graph.Vertices().
-                              ForEach(vertex => OutFile.WriteLine(vertex.SerializeVertex()));
+                              ForEach(vertex => OutFile.WriteLine(SerializeVertex(vertex)));
                     }
 
                     Console.WriteLine(Graph.NumberOfVertices() + " vertices and " + Graph.NumberOfEdges() + " edges stored to file '" + Prefix + LastSavePointId + "." + Suffix + "'!");
@@ -389,12 +542,76 @@ namespace eu.Vanaheimr.Duron
         #endregion
 
 
+        #region SerializeVertex(Vertex)
+
+        /// <summary>
+        /// Serialize the given vertex.
+        /// </summary>
+        /// <param name="Vertex">A generic property vertex.</param>
+        public String SerializeVertex(IReadOnlyGenericPropertyVertex<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                                     TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                                     TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                                     TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Vertex)
+
+        {
+
+            var SerializedVertex  = new StringBuilder(@"{ ""AddVertex"": { ").Append(SerializeProperties(Vertex, TKeyVertexSerializer, TValueVertexSerializer));
+
+            var SerializedEdges   = Vertex.OutEdges().Select(e => String.Concat(@"{ ""InVertex"": ",
+                                                                                VertexIdSerializer(e.InVertex.Id),
+                                                                                ", ",
+                                                                                SerializeProperties(e, TKeyEdgeSerializer, TValueEdgeSerializer),
+                                                                                " }"));
+
+            if (SerializedEdges.Any())
+                SerializedVertex.AppendCSV(@", ""OutEdges"": [ ", SerializedEdges, " ]");
+
+            return SerializedVertex.Append("} }").ToString();
+
+        }
+
+        #endregion
+
+        #region SerializeProperties(Properties)
+
+        public String SerializeProperties<TKey, TValue>(IReadOnlyProperties<TKey, TValue>  Properties,
+                                                        Func<TKey,   String>               KeySerializer,
+                                                        Func<TValue, String>               ValueSerializer)
+
+            where TKey : IEquatable<TKey>, IComparable<TKey>, IComparable
+
+        {
+
+            var VertexPropertyList = new List<String>();
+            var VertexPropertyValue = "";
+
+            foreach (var p in Properties)
+            {
+
+                var _JSONString = p.Value as JSONString;
+
+                if (_JSONString != null)
+                    VertexPropertyValue = _JSONString.JSONString;
+                else
+                    VertexPropertyValue = ValueSerializer(p.Value);
+
+                VertexPropertyList.Add(String.Concat(@"""", p.Key, @""": ", VertexPropertyValue));
+
+            }
+
+            return VertexPropertyList.CSVAggregate(@"""Properties"": { ", " }");
+
+        }
+
+        #endregion
+
+
         #region ParseVertex(...)
 
-        public void ParseVertex(IGenericPropertyGraph<String, Int64, TVertexLabel,    String, Object,
-                                                      String, Int64, TEdgeLabel,      String, Object,
-                                                      String, Int64, TMultiEdgeLabel, String, Object,
-                                                      String, Int64, THyperEdgeLabel, String, Object> graph,
+        public void ParseVertex(IGenericPropertyGraph<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                      TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                      TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                      TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> graph,
                                 JToken       VertexJSON,
                                 List<JToken> DelayedEdges)
 
@@ -415,7 +632,7 @@ namespace eu.Vanaheimr.Duron
             if (VertexLabelParser(HttpUtility.UrlDecode(VertexProperties["Label"].Value<String>()), out _VertexLabel))
             {
                 // VertexProperties["RevId"].Value<String>(), 
-                graph.AddVertex(HttpUtility.UrlDecode(VertexProperties["Id"].Value<String>()), _VertexLabel, v =>
+                graph.AddVertex(VertexProperties["Id"].Value<TIdVertex>(), _VertexLabel, v =>
                 {
 
                     foreach (var VertexPropertyJSON in VertexProperties)
@@ -435,20 +652,21 @@ namespace eu.Vanaheimr.Duron
 
                             var _V = (VertexPropertyJSON as JProperty).Value;
 
-                            if (_V.HasValues)
-                            {
+                            //if (_V.HasValues)
+                            //{
 
-                                EnglishText = _V["en"].Value<String>();
-                                GermanText  = _V["de"].Value<String>();
+                            //    EnglishText = _V["en"].Value<String>();
+                            //    GermanText  = _V["de"].Value<String>();
 
-                                v.SetProperty((VertexPropertyJSON as JProperty).Name, new I18N(new English(EnglishText),
-                                                                                               new German (GermanText)));
+                            //    v.SetProperty(TKeyVertexParser  ((VertexPropertyJSON as JProperty).Name),
+                            //                  TValueVertexParser(new I18N(new English(EnglishText),
+                            //                                              new German (GermanText))));
 
-                            }
+                            //}
 
-                            else
-                                v.SetProperty(HttpUtility.UrlDecode((VertexPropertyJSON as JProperty).Name),
-                                              HttpUtility.UrlDecode(_V.ToString()));
+                            //else
+                                v.SetProperty(TKeyVertexParser  (HttpUtility.UrlDecode((VertexPropertyJSON as JProperty).Name)),
+                                              TValueVertexParser(HttpUtility.UrlDecode(_V.ToString())));
 
                         }
 
@@ -460,23 +678,23 @@ namespace eu.Vanaheimr.Duron
                     {
 
                         TEdgeLabel _EdgeLabel;
-                        IReadOnlyGenericPropertyVertex<String, Int64, TVertexLabel,    String, Object,
-                                                       String, Int64, TEdgeLabel,      String, Object,
-                                                       String, Int64, TMultiEdgeLabel, String, Object,
-                                                       String, Int64, THyperEdgeLabel, String, Object> _InVertex;
+                        IReadOnlyGenericPropertyVertex<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                       TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                       TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                       TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> _InVertex;
 
                         var InVertexId     = OutEdgeJSON["InVertex"];
                         var EdgeProperties = OutEdgeJSON["Properties"];
 
                         if (EdgeLabelParser(HttpUtility.UrlDecode(EdgeProperties["Label"].Value<String>()), out _EdgeLabel))
                         {
-                            if (graph.TryGetVertexById(HttpUtility.UrlDecode(InVertexId.Value<String>()), out _InVertex))
+                            if (graph.TryGetVertexById(InVertexId.Value<TIdVertex>(), out _InVertex))
                             {
 
-                                var NewEdge = v.AddOutEdge(HttpUtility.UrlDecode(EdgeProperties["Id"].Value<String>()),
-                                                                      _EdgeLabel,
-                                                                      _InVertex,
-                                                                      e =>
+                                var NewEdge = v.AddOutEdge(EdgeProperties["Id"].Value<TIdEdge>(),
+                                                           _EdgeLabel,
+                                                           _InVertex,
+                                                           e =>
 
                                 EdgeProperties.TryForEach(EdgePropertyJSON =>
                                 {
@@ -484,15 +702,15 @@ namespace eu.Vanaheimr.Duron
                                     if ((EdgePropertyJSON as JProperty).Name != "Id"    &&
                                         (EdgePropertyJSON as JProperty).Name != "RevId" &&
                                         (EdgePropertyJSON as JProperty).Name != "Label")
-                                        e.SetProperty(HttpUtility.UrlDecode((EdgePropertyJSON as JProperty).Name),
-                                                      HttpUtility.UrlDecode((EdgePropertyJSON as JProperty).Value.ToString()));
+                                        e.SetProperty(TKeyEdgeParser  (HttpUtility.UrlDecode((EdgePropertyJSON as JProperty).Name)),
+                                                      TValueEdgeParser(HttpUtility.UrlDecode((EdgePropertyJSON as JProperty).Value.ToString())));
 
                                 }));
 
                             }
                             else
                             {
-                                OutEdgeJSON["OutVertex"] = v.Id;
+                                OutEdgeJSON["OutVertex"] = v.Id.ToString();
                                 DelayedEdges.Add(OutEdgeJSON);
                             }
                         }
@@ -514,10 +732,12 @@ namespace eu.Vanaheimr.Duron
 
         #region ParseEdge(...)
 
-        public void ParseEdge(IGenericPropertyGraph<String, Int64, TVertexLabel,    String, Object,
-                                                    String, Int64, TEdgeLabel,      String, Object,
-                                                    String, Int64, TMultiEdgeLabel, String, Object,
-                                                    String, Int64, THyperEdgeLabel, String, Object> graph, JToken EdgeJSON)
+        public void ParseEdge(IGenericPropertyGraph<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                                    TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                                    TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                                    TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> graph,
+                              JToken EdgeJSON)
+
         {
 
             TEdgeLabel _EdgeLabel;
@@ -530,10 +750,10 @@ namespace eu.Vanaheimr.Duron
             if (EdgeLabelParser(HttpUtility.UrlDecode(EdgeProperties["Label"].Value<String>()), out _EdgeLabel))
             {
 
-                graph.AddEdge(HttpUtility.UrlDecode(EdgeProperties["Id"].Value<String>()),
-                              graph.VertexById(HttpUtility.UrlDecode(EdgeJSON["OutVertex"].Value<String>())),
+                graph.AddEdge(EdgeProperties["Id"].Value<TIdEdge>(),
+                              graph.VertexById(EdgeJSON["OutVertex"].Value<TIdVertex>()),
                               _EdgeLabel,
-                              graph.VertexById(HttpUtility.UrlDecode(EdgeJSON["InVertex" ].Value<String>())),
+                              graph.VertexById(EdgeJSON["InVertex" ].Value<TIdVertex>()),
                               e => {
 
                                   foreach (var _JToken in EdgeProperties)
@@ -559,20 +779,21 @@ namespace eu.Vanaheimr.Duron
 
                                           var _E = (_JToken as JProperty).Value;
 
-                                          if (_E.HasValues)
-                                          {
+                                          //if (_E.HasValues)
+                                          //{
 
-                                              EnglishText = _E["en"].Value<String>();
-                                              GermanText  = _E["de"].Value<String>();
+                                          //    EnglishText = _E["en"].Value<String>();
+                                          //    GermanText  = _E["de"].Value<String>();
 
-                                              e.SetProperty((_JToken as JProperty).Name, new I18N(new English(EnglishText),
-                                                                                                  new German (GermanText)));
+                                          //    e.SetProperty(TKeyEdgeParser  ((_JToken as JProperty).Name),
+                                          //                  TValueEdgeParser(new I18N(new English(EnglishText),
+                                          //                                            new German (GermanText))));
 
-                                          }
+                                          //}
 
-                                          else
-                                              e.SetProperty(HttpUtility.UrlDecode((_JToken as JProperty).Name),
-                                                            HttpUtility.UrlDecode(_E.ToString()));
+                                          //else
+                                              e.SetProperty(TKeyEdgeParser  (HttpUtility.UrlDecode((_JToken as JProperty).Name)),
+                                                            TValueEdgeParser(HttpUtility.UrlDecode(_E.ToString())));
 
                                       }
 
