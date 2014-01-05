@@ -17,22 +17,20 @@
 
 #region Usings
 
+using eu.Vanaheimr.Balder;
+using eu.Vanaheimr.Illias.Commons;
+using eu.Vanaheimr.Illias.Commons.Collections;
+using eu.Vanaheimr.Styx;
+using eu.Vanaheimr.Walkyr;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Web;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Collections.Generic;
-
-using Newtonsoft.Json.Linq;
-
-using eu.Vanaheimr.Illias.Commons;
-using eu.Vanaheimr.Illias.Commons.Collections;
-using eu.Vanaheimr.Balder;
-using eu.Vanaheimr.Styx;
-using System.Diagnostics;
-using eu.Vanaheimr.Walkyr;
+using System.Web;
 
 #endregion
 
@@ -94,11 +92,11 @@ namespace eu.Vanaheimr.Duron
 
         #region Data
 
-        private readonly IGraphSerializer<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
-                                          TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
-                                          TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
-                                          TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge,
-                                          String>                               GraphSerializer;
+        private readonly IGraphIO<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                  TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                  TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                  TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge,
+                                  String>                                       GraphSerializer;
 
         public  const    String                                                 DefaultPrefix = "graphbackup";
         public  const    String                                                 DefaultSuffix = "graph";
@@ -115,10 +113,10 @@ namespace eu.Vanaheimr.Duron
         private readonly MultiEdgeLabelParserDelegate<String, TMultiEdgeLabel>  MultiEdgeLabelParser;
         private readonly HyperEdgeLabelParserDelegate<String, THyperEdgeLabel>  HyperEdgeLabelParser;
 
-        private readonly Func<String, TKeyVertex>   TKeyVertexParser;
-        private readonly Func<String, TValueVertex> TValueVertexParser;
-        private readonly Func<String, TKeyEdge>     TKeyEdgeParser;
-        private readonly Func<String, TValueEdge>   TValueEdgeParser;
+        private readonly Func<String, TKeyVertex>                               TKeyVertexParser;
+        private readonly Func<String, TValueVertex>                             TValueVertexParser;
+        private readonly Func<String, TKeyEdge>                                 TKeyEdgeParser;
+        private readonly Func<String, TValueEdge>                               TValueEdgeParser;
 
         #endregion
 
@@ -228,7 +226,7 @@ namespace eu.Vanaheimr.Duron
                                                               TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                               TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
 
-                                IGraphSerializer<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                IGraphIO<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
                                                  TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
                                                  TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                  TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge,
@@ -302,7 +300,7 @@ namespace eu.Vanaheimr.Duron
                                                       TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                       TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> Graph,
 
-                                IGraphSerializer<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                IGraphIO<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
                                                  TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
                                                  TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                  TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge,
@@ -637,7 +635,6 @@ namespace eu.Vanaheimr.Duron
             String GermanText;
 
             var VertexProperties = VertexJSON["Properties"];
-            
 
             if (VertexProperties == null)
                 throw new ArgumentException("No vertex properties found!");
