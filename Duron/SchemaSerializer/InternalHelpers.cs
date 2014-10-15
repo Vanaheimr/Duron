@@ -23,7 +23,7 @@ using System.Reflection;
 
 #endregion
 
-namespace eu.Vanaheimr.Duron
+namespace org.GraphDefined.Vanaheimr.Duron
 {
 
     internal static class InternalHelpers

@@ -27,14 +27,14 @@ using System.Collections.Generic;
 
 using Newtonsoft.Json.Linq;
 
-using eu.Vanaheimr.Illias.Commons;
-using eu.Vanaheimr.Illias.Commons.Collections;
-using eu.Vanaheimr.Balder;
-using eu.Vanaheimr.Styx;
+using org.GraphDefined.Vanaheimr.Illias;
+using org.GraphDefined.Vanaheimr.Illias.Collections;
+using org.GraphDefined.Vanaheimr.Balder;
+using org.GraphDefined.Vanaheimr.Styx;
 
 #endregion
 
-namespace eu.Vanaheimr.Duron
+namespace org.GraphDefined.Vanaheimr.Duron
 {
 
     public delegate Boolean VertexLabelParserDelegate   <T, TVertexLabel>    (T Label, out TVertexLabel     VertexLabel)

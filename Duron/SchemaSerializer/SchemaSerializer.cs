@@ -30,12 +30,12 @@ using System.Text;
 using System.Linq.Expressions;
 using System.Diagnostics;
 
-using eu.Vanaheimr.Styx;
-using eu.Vanaheimr.Styx.Arrows;
+using org.GraphDefined.Vanaheimr.Styx;
+using org.GraphDefined.Vanaheimr.Styx.Arrows;
 
 #endregion
 
-namespace eu.Vanaheimr.Duron
+namespace org.GraphDefined.Vanaheimr.Duron
 {
 
     /// <summary>

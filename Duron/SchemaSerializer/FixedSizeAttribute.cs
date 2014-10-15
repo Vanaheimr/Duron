@@ -21,7 +21,7 @@ using System;
 
 #endregion
 
-namespace eu.Vanaheimr.Duron
+namespace org.GraphDefined.Vanaheimr.Duron
 {
 
     /// <summary>

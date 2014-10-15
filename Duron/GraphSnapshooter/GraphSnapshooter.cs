@@ -17,11 +17,11 @@
 
 #region Usings
 
-using eu.Vanaheimr.Balder;
-using eu.Vanaheimr.Illias.Commons;
-using eu.Vanaheimr.Illias.Commons.Collections;
-using eu.Vanaheimr.Styx;
-using eu.Vanaheimr.Walkyr;
+using org.GraphDefined.Vanaheimr.Balder;
+using org.GraphDefined.Vanaheimr.Illias;
+using org.GraphDefined.Vanaheimr.Illias.Collections;
+using org.GraphDefined.Vanaheimr.Styx;
+using org.GraphDefined.Vanaheimr.Walkyr;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ using System.Web;
 
 #endregion
 
-namespace eu.Vanaheimr.Duron
+namespace org.GraphDefined.Vanaheimr.Duron
 {
 
     /// <summary>
