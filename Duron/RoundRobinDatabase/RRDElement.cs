@@ -30,7 +30,7 @@ using System.Linq.Expressions;
 
 #endregion
 
-namespace eu.Vanaheimr.Duron
+namespace org.GraphDefined.Vanaheimr.Duron
 {
 
     //public struct RRDElement<T>

@@ -31,7 +31,7 @@ using System.Linq.Expressions;
 
 #endregion
 
-namespace eu.Vanaheimr.Duron
+namespace org.GraphDefined.Vanaheimr.Duron
 {
 
     public class RRDBuilder<T> : IDisposable
