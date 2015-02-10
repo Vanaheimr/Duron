@@ -401,7 +401,7 @@ namespace org.GraphDefined.Vanaheimr.Duron
                     var FileName  = Prefix + LastSavePointId + "." + Suffix;
                     var StopWatch = Stopwatch.StartNew();
 
-                    using (var OutFile = new StreamWriter(FileName))
+                    using (var OutFile = new StreamWriter(FileName, append: false, encoding: Encoding.UTF8))
                     {
 
                         // For BalderSON this (currently) includes the outedges!
@@ -527,11 +527,11 @@ namespace org.GraphDefined.Vanaheimr.Duron
                 #endregion
 
 
-                List<JToken> DelayedEdges;
-                JToken       AddVertexCommand;
-                JToken       AddEdgeCommand;
-                JToken       AddGroupCommand;
-                JObject      _JObject;
+                JObject       _JObject;
+                JObject       AddVertexCommand;
+                List<JToken>  DelayedEdges;
+                JObject       AddEdgeCommand;
+                JObject       AddGroupCommand;
 
                 var StopWatch = Stopwatch.StartNew();
 
@@ -540,54 +540,48 @@ namespace org.GraphDefined.Vanaheimr.Duron
 
                     DelayedEdges = new List<JToken>();
 
-                    using (var InputFile = new StreamReader(LastSavePointFile))
+                    foreach (var CurrentLine in File.ReadLines(LastSavePointFile, Encoding.UTF8))
                     {
 
-                        foreach (var CurrentLine in InputFile.GetLines())
+                        // Ignore comments and empty lines
+                        if (CurrentLine == null                  ||
+                            CurrentLine.Trim() == ""             ||
+                            CurrentLine.Trim().StartsWith("#")   ||
+                            CurrentLine.Trim().StartsWith("//"))
+                            continue;
+
+                        _JObject = null;
+
+                        try
+                        {
+                            _JObject = JObject.Parse(CurrentLine);
+                        }
+                        catch (Exception e)
+                        {
+                            throw new Exception("Could not parse JSON: " + CurrentLine, e);
+                        }
+
+                        if      ((AddVertexCommand = _JObject["AddVertex"] as JObject) != null)
+                            ParseVertex(Graph, AddVertexCommand, DelayedEdges);
+
+                        else if ((AddEdgeCommand   = _JObject["AddEdge"  ] as JObject) != null)
+                            ParseEdge  (Graph, AddEdgeCommand);
+
+                        else if ((AddGroupCommand  = _JObject["AddGroup" ] as JObject) != null)
                         {
 
-                            if (CurrentLine == null ||
-                                CurrentLine.Trim() == "" ||
-                                CurrentLine.StartsWith("#") ||
-                                CurrentLine.StartsWith("//"))
-                                continue;
-
-                            _JObject = null;
-
-                            try
-                            {
-                                _JObject = JObject.Parse(CurrentLine);
-                            }
-                            catch (Exception e)
-                            {
-                                throw new Exception("Could not parse JSON: " + CurrentLine, e);
-                            }
-
-                            if ((AddVertexCommand = _JObject["AddVertex"]) != null)
-                                ParseVertex(Graph, AddVertexCommand, DelayedEdges);
-
-                            else if ((AddEdgeCommand = _JObject["AddEdge"]) != null)
-                                ParseEdge(Graph, AddEdgeCommand);
-
-                            else if ((AddGroupCommand = _JObject["AddGroup"]) != null)
+                            foreach (var GroupedCommand in AddGroupCommand.Children())
                             {
 
-                                foreach (var GroupedCommand in AddGroupCommand.Children())
-                                {
+                                if ((AddVertexCommand = GroupedCommand["AddVertex"] as JObject) != null)
+                                    ParseVertex(Graph, AddVertexCommand, DelayedEdges);
 
-                                    if ((AddVertexCommand = GroupedCommand["AddVertex"]) != null)
-                                        ParseVertex(Graph, AddVertexCommand, DelayedEdges);
-
-                                    else if ((AddEdgeCommand = GroupedCommand["AddEdge"]) != null)
-                                        ParseEdge(Graph, AddEdgeCommand);
-
-                                }
+                                else if ((AddEdgeCommand = GroupedCommand["AddEdge"] as JObject) != null)
+                                    ParseEdge(Graph, AddEdgeCommand);
 
                             }
 
                         }
-
-                        InputFile.Close();
 
                     }
 
@@ -626,111 +620,122 @@ namespace org.GraphDefined.Vanaheimr.Duron
                                                       TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
                                                       TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
                                                       TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> graph,
-                                JToken       VertexJSON,
+                                JObject      VertexJSON,
                                 List<JToken> DelayedEdges)
 
         {
 
-            TVertexLabel _VertexLabel;
+            TVertexLabel  VertexLabel;
+            JProperty     Property;
+            JArray        PropertyArray;
+            JObject       PropertyObject;
 
-            String EnglishText;
-            String GermanText;
+            JToken        InVertexId;
+            TEdgeLabel    EdgeLabel;
+            JToken        EdgeProperties;
+            IReadOnlyGenericPropertyVertex<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
+                                           TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
+                                           TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
+                                           TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> InVertex;
 
             var VertexProperties = VertexJSON["Properties"];
-
             if (VertexProperties == null)
-                throw new ArgumentException("No vertex properties found!");
+                return;
 
 
-            if (VertexLabelParser(HttpUtility.UrlDecode(VertexProperties["Label"].Value<String>()), out _VertexLabel))
+            // 1) Parse vertex label...
+            if (VertexLabelParser(HttpUtility.UrlDecode(VertexProperties["Label"].Value<String>()), out VertexLabel))
             {
-                // VertexProperties["RevId"].Value<String>(), 
-                graph.AddVertex(VertexProperties["Id"].Value<TIdVertex>(), _VertexLabel, v =>
-                {
 
-                    foreach (var VertexPropertyJSON in VertexProperties)
-                    {
+                // 2) Try to crate the vertex...
+                graph.AddVertex(VertexProperties["Id"].Value<TIdVertex>(), VertexLabel, Vertex => {
 
-                        if      ((VertexPropertyJSON as JProperty).Name == "Id")
-                            continue;
 
-                        else if ((VertexPropertyJSON as JProperty).Name == "RevId")
-                            continue;
+                    #region 3) Add vertex properties...
 
-                        else if ((VertexPropertyJSON as JProperty).Name == "Label")
-                            continue;
+                    VertexProperties.TryForEach(VertexPropertyJSON => {
 
-                        else
-                        {
+                        Property = VertexPropertyJSON as JProperty;
 
-                            var _V = (VertexPropertyJSON as JProperty).Value;
+                        if (Property.Name != "Id"    &&
+                            Property.Name != "RevId" &&
+                            Property.Name != "Label") {
 
-                            //if (_V.HasValues)
-                            //{
+                            if (Property.Value is JValue)
+                                Vertex.SetProperty(TKeyVertexParser  (Property.Name),
+                                                   TValueVertexParser(HttpUtility.UrlDecode(Property.Value.ToString())));
 
-                            //    EnglishText = _V["en"].Value<String>();
-                            //    GermanText  = _V["de"].Value<String>();
+                            else if ((PropertyArray  = Property.Value as JArray)  != null)
+                                Vertex.SetProperty(TKeyVertexParser(Property.Name),
+                                                   (TValueVertex) (Object) PropertyArray.Select(v => TValueVertexParser((v as JValue).Value.ToString())).ToList());
 
-                            //    v.SetProperty(TKeyVertexParser  ((VertexPropertyJSON as JProperty).Name),
-                            //                  TValueVertexParser(new I18N(new English(EnglishText),
-                            //                                              new German (GermanText))));
-
-                            //}
-
-                            //else
-                                v.SetProperty(TKeyVertexParser  (HttpUtility.UrlDecode((VertexPropertyJSON as JProperty).Name)),
-                                              TValueVertexParser(HttpUtility.UrlDecode(_V.ToString())));
+                            else if ((PropertyObject = Property.Value as JObject) != null)
+                                Vertex.SetProperty(TKeyVertexParser(Property.Name),
+                                                   (TValueVertex) (Object) PropertyObject.Properties().ToDictionary(v => TKeyVertexParser  (v.Name),
+                                                                                                                    v => TValueVertexParser(v.Value.ToString())));
 
                         }
 
+                    });
 
-                    }
+                    #endregion
 
+                    #region 4) Add outedges...
 
-                    VertexJSON["OutEdges"].TryForEach(OutEdgeJSON =>
-                    {
+                    VertexJSON["OutEdges"].TryForEach(OutEdgeJSON => {
 
-                        TEdgeLabel _EdgeLabel;
-                        IReadOnlyGenericPropertyVertex<TIdVertex,    TRevIdVertex,    TVertexLabel,    TKeyVertex,    TValueVertex,
-                                                       TIdEdge,      TRevIdEdge,      TEdgeLabel,      TKeyEdge,      TValueEdge,
-                                                       TIdMultiEdge, TRevIdMultiEdge, TMultiEdgeLabel, TKeyMultiEdge, TValueMultiEdge,
-                                                       TIdHyperEdge, TRevIdHyperEdge, THyperEdgeLabel, TKeyHyperEdge, TValueHyperEdge> _InVertex;
+                        InVertexId      = OutEdgeJSON["InVertex"];
+                        EdgeProperties  = OutEdgeJSON["Properties"];
 
-                        var InVertexId     = OutEdgeJSON["InVertex"];
-                        var EdgeProperties = OutEdgeJSON["Properties"];
-
-                        if (EdgeLabelParser(HttpUtility.UrlDecode(EdgeProperties["Label"].Value<String>()), out _EdgeLabel))
+                        if (EdgeLabelParser(HttpUtility.UrlDecode(EdgeProperties["Label"].Value<String>()), out EdgeLabel))
                         {
-                            if (graph.TryGetVertexById(InVertexId.Value<TIdVertex>(), out _InVertex))
+
+                            if (graph.TryGetVertexById(InVertexId.Value<TIdVertex>(), out InVertex))
                             {
 
-                                var NewEdge = v.AddOutEdge(EdgeProperties["Id"].Value<TIdEdge>(),
-                                                           _EdgeLabel,
-                                                           _InVertex,
-                                                           e =>
+                                Vertex.AddOutEdge(EdgeProperties["Id"].Value<TIdEdge>(),
+                                                  EdgeLabel,
+                                                  InVertex,
+                                                  e => EdgeProperties.TryForEach(EdgePropertyJSON => {
 
-                                EdgeProperties.TryForEach(EdgePropertyJSON =>
-                                {
+                                                       Property = EdgePropertyJSON as JProperty;
 
-                                    if ((EdgePropertyJSON as JProperty).Name != "Id"    &&
-                                        (EdgePropertyJSON as JProperty).Name != "RevId" &&
-                                        (EdgePropertyJSON as JProperty).Name != "Label")
-                                        e.SetProperty(TKeyEdgeParser  (HttpUtility.UrlDecode((EdgePropertyJSON as JProperty).Name)),
-                                                      TValueEdgeParser(HttpUtility.UrlDecode((EdgePropertyJSON as JProperty).Value.ToString())));
+                                                       if (Property.Name != "Id"    &&
+                                                           Property.Name != "RevId" &&
+                                                           Property.Name != "Label") {
 
-                                }));
+                                                           if (Property.Value is JValue)
+                                                               e.SetProperty(TKeyEdgeParser  (Property.Name),
+                                                                             TValueEdgeParser(Property.Value.ToString()));
+
+                                                           else if ((PropertyArray  = Property.Value as JArray)  != null)
+                                                               e.SetProperty(TKeyEdgeParser(Property.Name),
+                                                                             (TValueEdge) (Object) PropertyArray.Select(v => TValueEdgeParser((v as JValue).Value.ToString())).ToList());
+
+                                                           else if ((PropertyObject = Property.Value as JObject) != null)
+                                                               e.SetProperty(TKeyEdgeParser(Property.Name),
+                                                                             (TValueEdge) (Object) PropertyObject.Properties().ToDictionary(v => TKeyEdgeParser  (v.Name),
+                                                                                                                                            v => TValueEdgeParser(v.Value.ToString())));
+
+                                                       }
+
+                                                   }));
 
                             }
+
                             else
                             {
-                                OutEdgeJSON["OutVertex"] = v.Id.ToString();
+                                OutEdgeJSON["OutVertex"] = Vertex.Id.ToString();
                                 DelayedEdges.Add(OutEdgeJSON);
                             }
+
                         }
                         else
                             throw new Exception("Unknown EdgeLabel '" + EdgeProperties["Label"].Value<String>() + "'!");
 
                     });
+
+                    #endregion
 
                 });
 
