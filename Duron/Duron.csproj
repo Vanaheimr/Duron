@@ -74,13 +74,6 @@
       <Project>{d2b4e7c7-0524-4de5-9d62-2de05682a74d}</Project>
       <Name>Balder</Name>
     </ProjectReference>
-<<<<<<< HEAD
-    <ProjectReference Include="..\..\Illias\Illias.NET4.5\Illias.NET4.5.csproj">
-      <Project>{23d37453-2d4e-4bd8-b40f-3e731fee7712}</Project>
-      <Name>Illias.NET4.5</Name>
-    </ProjectReference>
-=======
->>>>>>> 8512df86131316cb61fa84c28e105288bb065fa4
     <ProjectReference Include="..\..\Illias\Illias\Illias.csproj">
       <Project>{23d37453-2d4e-4bd8-b40f-3e731fee7712}</Project>
       <Name>Illias</Name>
